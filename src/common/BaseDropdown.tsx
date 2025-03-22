@@ -18,14 +18,14 @@ const BaseDropdown: React.FC = () => {
   console.log("hoveredKey", hoveredKey);
   const items: MenuProps["items"] = [
     {
-      label: "PC / Máy bộ",
+      label: "PC / Computer",
       key: "1",
       onMouseEnter: () => setHoveredKey("1"),
       onMouseLeave: () => setHoveredKey(null),
       icon: <DesktopOutlined />,
     },
     {
-      label: "Màn hình - Loa",
+      label: "Screen - Speaker",
       key: "2",
       onMouseEnter: () => setHoveredKey("2"),
       onMouseLeave: () => setHoveredKey(null),
@@ -39,14 +39,14 @@ const BaseDropdown: React.FC = () => {
       icon: <LaptopOutlined />,
     },
     {
-      label: "Chuột - Bàn phím - Tai nghe",
+      label: "Mouse - Keyboard - Headphones",
       key: "4",
       onMouseEnter: () => setHoveredKey("4"),
       onMouseLeave: () => setHoveredKey(null),
       icon: <AudioOutlined />,
     },
     {
-      label: "Linh kiện PC/Laptop",
+      label: "PC/Laptops Components",
       key: "5",
       onMouseEnter: () => setHoveredKey("5"),
       onMouseLeave: () => setHoveredKey(null),
@@ -60,14 +60,14 @@ const BaseDropdown: React.FC = () => {
       icon: <AppstoreOutlined />,
     },
     {
-      label: "USB - Thẻ nhớ",
+      label: "USB - Memory card",
       key: "7",
       onMouseEnter: () => setHoveredKey("7"),
       onMouseLeave: () => setHoveredKey(null),
       icon: <UsbOutlined />,
     },
     {
-      label: "Phụ kiện",
+      label: "Accessories",
       key: "8",
       onMouseEnter: () => setHoveredKey("8"),
       onMouseLeave: () => setHoveredKey(null),
@@ -88,7 +88,7 @@ const BaseDropdown: React.FC = () => {
       <Dropdown menu={menuProps} className="mx-5">
         <Button type="primary" size="large" className="!font-bold">
           <MenuOutlined />
-          Danh mục sản phẩm
+          Product Catalog
         </Button>
       </Dropdown>
     </>

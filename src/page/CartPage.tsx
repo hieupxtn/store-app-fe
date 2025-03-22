@@ -112,7 +112,7 @@ const CartPage: React.FC = () => {
   return (
     <Layout className="min-h-screen flex flex-col">
       <AppHeader />
-      <Content className="flex-grow p-6 bg-gray-100">
+      <Content className="flex-grow p-6 bg-gray-100 h-full">
         <div className="max-w-4xl mx-auto bg-white p-6 shadow-md rounded-lg">
           <h2 className="text-2xl font-bold mb-4">Shopping Cart</h2>
 

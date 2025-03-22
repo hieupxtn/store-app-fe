@@ -15,7 +15,7 @@ const AppHeader: React.FC = () => {
   }, [cartCount]);
 
   return (
-    <Header className="!bg-[#002d6a] flex items-center justify-center px-6 !shadow-md">
+    <Header className="!bg-[#002d6a] flex items-center justify-center px-6 !shadow-md !sticky top-0 z-10">
       <Col className="flex items-center mx-15 !text-xl !font-bold">
         <Link
           to="/"
@@ -26,7 +26,7 @@ const AppHeader: React.FC = () => {
             src={"/images/deskstore.png"}
             className="!shadow-sm"
           />
-          DeckStore
+          DeskStore
         </Link>
       </Col>
       <Col className="flex items-center justify-center h-full">

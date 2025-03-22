@@ -10,7 +10,7 @@ const { Footer } = Layout;
 
 const AppFooter: React.FC = () => {
   return (
-    <Footer className="!bg-[#002d6a] text-center px-6 !shadow-md !text-blue-100">
+    <Footer className="!bg-[#002d6a] text-center px-6 !shadow-md !text-blue-100 bottom-0 z-10">
       <p className="text-sm">
         © {new Date().getFullYear()} My Website. All rights reserved.
       </p>
