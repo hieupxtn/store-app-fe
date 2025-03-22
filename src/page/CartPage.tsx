@@ -40,26 +40,22 @@ const initialCart: CartItem[] = [
 const CartPage: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>(initialCart);
 
-  // Cập nhật số lượng sản phẩm
   const updateQuantity = (id: number, quantity: number) => {
     setCart((prevCart) =>
       prevCart.map((item) => (item.id === id ? { ...item, quantity } : item))
     );
   };
 
-  // Xóa sản phẩm khỏi giỏ hàng
   const removeItem = (id: number) => {
     setCart((prevCart) => prevCart.filter((item) => item.id !== id));
     message.success("Removed item from cart!");
   };
 
-  // Tính tổng tiền
   const totalPrice = cart.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0
   );
 
-  // Cột của bảng giỏ hàng
   const columns = [
     {
       title: "Product",

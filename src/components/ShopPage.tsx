@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { Layout, Drawer, Badge, Button } from "antd";
+import { Drawer, Badge, Button, Row } from "antd";
 import { ShoppingCartOutlined } from "@ant-design/icons";
-import { Content } from "antd/es/layout/layout";
 import ProductCard from "../components/ProductCard";
 import FilterBar from "../components/FilterBar";
 
@@ -57,15 +56,16 @@ const ShopPage: React.FC = () => {
   });
 
   return (
-    <Layout className="flex flex-col min-h-screen w-full">
-      <Content className="flex-grow p-6">
-        <FilterBar
-          setCategory={setCategory}
-          setPriceRange={setPriceRange}
-          setSearch={setSearch}
-        />
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <Row className="flex py-5 justify-center w-full">
+      <Row className="w-2/3 min-w-2/3">
+        <Row className="w-full">
+          <FilterBar
+            setCategory={setCategory}
+            setPriceRange={setPriceRange}
+            setSearch={setSearch}
+          />
+        </Row>
+        <Row className="flex justify-around w-full">
           {filteredProducts.map((product) => (
             <ProductCard
               key={product.id}
@@ -73,33 +73,33 @@ const ShopPage: React.FC = () => {
               addToCart={addToCart}
             />
           ))}
-        </div>
+        </Row>
+      </Row>
 
-        <div className="fixed bottom-6 right-6">
-          <Badge count={cart.length} size="small">
-            <Button
-              type="primary"
-              icon={<ShoppingCartOutlined />}
-              shape="circle"
-              size="large"
-              onClick={() => setCartOpen(true)}
-            />
-          </Badge>
-        </div>
+      <div className="fixed bottom-6 right-6">
+        <Badge count={cart.length} size="small">
+          <Button
+            type="primary"
+            icon={<ShoppingCartOutlined />}
+            shape="circle"
+            size="large"
+            onClick={() => setCartOpen(true)}
+          />
+        </Badge>
+      </div>
 
-        <Drawer
-          title="Your Cart"
-          placement="right"
-          onClose={() => setCartOpen(false)}
-          open={cartOpen}
-        >
-          <p>Items in cart: {cart.length}</p>
-          <Button type="primary" className="mt-4 w-full">
-            Checkout
-          </Button>
-        </Drawer>
-      </Content>
-    </Layout>
+      <Drawer
+        title="Your Cart"
+        placement="right"
+        onClose={() => setCartOpen(false)}
+        open={cartOpen}
+      >
+        <p>Items in cart: {cart.length}</p>
+        <Button type="primary" className="mt-4 w-full">
+          Checkout
+        </Button>
+      </Drawer>
+    </Row>
   );
 };
 
