@@ -19,9 +19,9 @@ const HomePage: React.FC = () => {
   return (
     <Layout className="flex flex-col min-h-screen w-full">
       <AppHeader />
-      <Content className="p-10 bg-gray-100 min-h-screen">
+      <Content className="p-10 bg-[#bcd5fa] min-h-screen">
         <Carousel autoplay className="rounded-lg shadow-lg overflow-hidden">
-          {["Banner1.png", "Banner2.png"].map((banner, index) => (
+          {["Banner2.png", "Banner1.png"].map((banner, index) => (
             <div key={index}>
               <img
                 src={`/images/${banner}`}
@@ -33,7 +33,10 @@ const HomePage: React.FC = () => {
         </Carousel>
 
         <div className="text-center mt-2">
-          <Title level={1} className="!text-[#8B0000] font-semibold">
+          <Title
+            level={1}
+            className="!text-[#803535] font-semibold hover:!text-[#bb8570]"
+          >
             Latest Technology at Your Fingertips
           </Title>
         </div>
@@ -41,7 +44,7 @@ const HomePage: React.FC = () => {
         <Row gutter={[16, 16]} className="mt-2 flex justify-center gap-5">
           {productTypes.map((type) => (
             <Col key={type.name}>
-              <Card className="p-5 min-w-[200px] !flex !flex-col !items-center !rounded-lg !transition-all !bg-transparent !border-none hover:!shadow-2xl hover:!border-gray-600 cursor-pointer">
+              <Card className="p-5 min-w-[200px] !flex !flex-col !items-center !rounded-lg !transition-all !bg-transparent !border-none hover:!shadow-2xl hover:!border-gray-600 cursor-pointer hover:!bg-blue-200">
                 <Row className="text-sm font-bold text-gray-800 !flex !items-center !justify-center">
                   <Avatar size={64} src={type.image} className="!shadow-sm" />
                 </Row>

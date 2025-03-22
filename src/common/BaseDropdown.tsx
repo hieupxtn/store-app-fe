@@ -9,6 +9,7 @@ import {
   ToolOutlined,
   FundProjectionScreenOutlined,
   AppstoreOutlined,
+  MenuOutlined,
 } from "@ant-design/icons";
 import { Button, Dropdown, message } from "antd";
 
@@ -84,8 +85,9 @@ const BaseDropdown: React.FC = () => {
   };
   return (
     <>
-      <Dropdown menu={menuProps} className="mx-2">
+      <Dropdown menu={menuProps} className="mx-5">
         <Button type="primary" size="large" className="!font-bold">
+          <MenuOutlined />
           Danh mục sản phẩm
         </Button>
       </Dropdown>

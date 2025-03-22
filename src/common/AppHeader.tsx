@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Layout, Col, Badge, Button } from "antd";
+import { Layout, Col, Badge, Button, Avatar } from "antd";
 import { Link } from "react-router-dom";
 import CustomSearch from "./SearchBox";
 import { UserOutlined, ShoppingCartOutlined } from "@ant-design/icons";
@@ -15,12 +15,17 @@ const AppHeader: React.FC = () => {
   }, [cartCount]);
 
   return (
-    <Header className="!bg-gradient-to-r !from-[#a6a6a6] !to-[#dfa59d] flex items-center justify-center px-6 !shadow-md">
+    <Header className="!bg-[#002d6a] flex items-center justify-center px-6 !shadow-md">
       <Col className="flex items-center mx-15 !text-xl !font-bold">
         <Link
           to="/"
-          className="flex items-center !font-bold !text-gray-900 hover:!text-blue-600 !transition"
+          className="flex items-center !font-bold !text-blue-100 hover:!text-blue-600 !transition"
         >
+          <Avatar
+            size={64}
+            src={"/images/deskstore.png"}
+            className="!shadow-sm"
+          />
           DeckStore
         </Link>
       </Col>
@@ -31,21 +36,21 @@ const AppHeader: React.FC = () => {
         <CustomSearch onSearch={() => console.log("first")} />
       </Col>
       <Col className="flex items-center gap-4">
-        <Link to="/login" className="!text-gray-900 hover:text-blue-600">
+        <Link to="/login" className="!text-blue-100 hover:text-blue-600">
           <Button
             type="text"
-            icon={<UserOutlined className="!text-gray-900 !text-xl" />}
-            className="hidden md:inline-flex !text-lg"
+            icon={<UserOutlined className="!text-blue-100 !text-xl" />}
+            className="hidden md:inline-flex !text-lg !text-blue-100"
           >
             Login
           </Button>
         </Link>
-        <Link to="/cart" className="text-gray-900 hover:text-blue-600">
+        <Link to="/cart" className="!text-blue-100 hover:text-blue-600">
           <Badge count={cartCount} size="small">
             <Button
               type="text"
-              icon={<ShoppingCartOutlined className="text-gray-900 text-xl" />}
-              className="hidden md:inline-flex !text-lg"
+              icon={<ShoppingCartOutlined className="!text-blue-100 text-xl" />}
+              className="hidden md:inline-flex !text-lg !text-blue-100"
             >
               Cart
             </Button>
