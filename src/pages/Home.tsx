@@ -4,6 +4,7 @@ import { Content } from "antd/es/layout/layout";
 import AppHeader from "../common/AppHeader";
 import AppFooter from "../common/AppFooter";
 import Title from "antd/es/typography/Title";
+import ProductList from "../components/ProductList";
 // import CustomCarousel from "../common/BaseCarousel";
 // import ShopPage from "../components/ShopPage";
 
@@ -14,6 +15,45 @@ const HomePage: React.FC = () => {
     { name: "Smartphones", image: "/images/smartphone.png" },
     { name: "Gear", image: "/images/gear.png" },
     { name: "Card Gaming", image: "/images/card.png" },
+  ];
+
+  // Mock data for products
+  const mockProducts = [
+    {
+      id: 1,
+      name: "Gaming PC Pro",
+      price: 1299,
+      image: "/images/pc.png",
+      description: "High-performance gaming PC with RTX 3080",
+    },
+    {
+      id: 2,
+      name: "Ultra Laptop",
+      price: 999,
+      image: "/images/laptop.png",
+      description: "Powerful laptop for gaming and work",
+    },
+    {
+      id: 3,
+      name: "Pro Smartphone",
+      price: 799,
+      image: "/images/smartphone.png",
+      description: "Latest smartphone with amazing camera",
+    },
+    {
+      id: 4,
+      name: "Gaming Gear Set",
+      price: 299,
+      image: "/images/gear.png",
+      description: "Complete gaming peripherals set",
+    },
+    {
+      id: 5,
+      name: "RTX 4080",
+      price: 899,
+      image: "/images/card.png",
+      description: "High-end graphics card for gaming",
+    },
   ];
 
   return (
@@ -88,6 +128,14 @@ const HomePage: React.FC = () => {
             </Card>
           </Col>
         </Row>
+
+        {/* Featured Products Section */}
+        <div className="mt-10">
+          <Title level={2} className="text-center mb-8 !text-[#803535]">
+            Featured Products
+          </Title>
+          <ProductList products={mockProducts} />
+        </div>
       </Content>
       <AppFooter />
     </Layout>
