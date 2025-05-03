@@ -4,6 +4,7 @@ import { Layout, Table, Button, message } from "antd";
 import { Content } from "antd/es/layout/layout";
 import AppHeader from "../common/AppHeader";
 import AppFooter from "../common/AppFooter";
+import FeaturedBrands from "../components/FeaturedBrands";
 
 interface CartItem {
   id: number;
@@ -113,7 +114,7 @@ const CartPage: React.FC = () => {
     <Layout className="min-h-screen flex flex-col">
       <AppHeader />
       <Content className="flex-grow p-6 bg-gray-100 h-full">
-        <div className="max-w-4xl mx-auto bg-white p-6 shadow-md rounded-lg">
+        <div className="max-w-4xl mx-auto bg-white p-6 shadow-md rounded-lg min-h-[463px]">
           <h2 className="text-2xl font-bold mb-4">Shopping Cart</h2>
 
           {cart.length > 0 ? (
@@ -142,6 +143,7 @@ const CartPage: React.FC = () => {
             <p className="text-center text-gray-500">Your cart is empty.</p>
           )}
         </div>
+        <FeaturedBrands />
       </Content>
       <AppFooter />
     </Layout>

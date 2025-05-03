@@ -5,6 +5,8 @@ import AppHeader from "../common/AppHeader";
 import AppFooter from "../common/AppFooter";
 import Title from "antd/es/typography/Title";
 import ProductList from "../components/ProductList";
+import FeaturedBrands from "../components/FeaturedBrands";
+import NewProducts from "../components/NewAtNewegg";
 // import CustomCarousel from "../common/BaseCarousel";
 // import ShopPage from "../components/ShopPage";
 
@@ -136,6 +138,8 @@ const HomePage: React.FC = () => {
           </Title>
           <ProductList products={mockProducts} />
         </div>
+        <NewProducts />
+        <FeaturedBrands />
       </Content>
       <AppFooter />
     </Layout>
