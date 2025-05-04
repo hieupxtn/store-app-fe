@@ -14,7 +14,7 @@ const brands = [
 
 const FeaturedBrands: React.FC = () => {
   return (
-    <div className="mt-16">
+    <div className="mt-16 px-14">
       <div className="flex items-center mb-4">
         <Typography.Title level={3} className="!mb-0 !mr-4 !text-[#0a174e]">
           Featured Brands

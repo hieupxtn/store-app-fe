@@ -6,7 +6,8 @@ import AppFooter from "../common/AppFooter";
 import Title from "antd/es/typography/Title";
 import ProductList from "../components/ProductList";
 import FeaturedBrands from "../components/FeaturedBrands";
-import NewProducts from "../components/NewAtNewegg";
+import NewProducts from "../components/NewProducts";
+import BestSeller from "../components/BestSeller";
 // import CustomCarousel from "../common/BaseCarousel";
 // import ShopPage from "../components/ShopPage";
 
@@ -97,40 +98,6 @@ const HomePage: React.FC = () => {
             </Col>
           ))}
         </Row>
-
-        {/* Features */}
-        <Row gutter={[16, 16]} className="mt-10">
-          <Col span={8}>
-            <Card
-              title="Top Quality Products"
-              bordered={false}
-              className="shadow-md"
-            >
-              We offer only the best technology products with guaranteed
-              quality.
-            </Card>
-          </Col>
-          <Col span={8}>
-            <Card
-              title="Best Prices Guaranteed"
-              bordered={false}
-              className="shadow-md"
-            >
-              Get the latest tech at unbeatable prices with amazing deals.
-            </Card>
-          </Col>
-          <Col span={8}>
-            <Card
-              title="24/7 Customer Support"
-              bordered={false}
-              className="shadow-md"
-            >
-              Our support team is always available to assist you with any
-              inquiries.
-            </Card>
-          </Col>
-        </Row>
-
         {/* Featured Products Section */}
         <div className="mt-10">
           <Title level={2} className="text-center mb-8 !text-[#803535]">
@@ -138,6 +105,7 @@ const HomePage: React.FC = () => {
           </Title>
           <ProductList products={mockProducts} />
         </div>
+        <BestSeller />
         <NewProducts />
         <FeaturedBrands />
       </Content>
