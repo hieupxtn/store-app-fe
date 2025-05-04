@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Avatar, Card, Carousel, Col, Layout, Row } from "antd";
 import { Content } from "antd/es/layout/layout";
 import AppHeader from "../common/AppHeader";
@@ -8,55 +8,43 @@ import ProductList from "../components/ProductList";
 import FeaturedBrands from "../components/FeaturedBrands";
 import NewProducts from "../components/NewProducts";
 import BestSeller from "../components/BestSeller";
+import { api } from "../services/api";
 // import CustomCarousel from "../common/BaseCarousel";
 // import ShopPage from "../components/ShopPage";
 
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  image: string;
+  description: string;
+}
+
 const HomePage: React.FC = () => {
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFeaturedProducts = async () => {
+      try {
+        const response = await api.getFeaturedProducts();
+        setFeaturedProducts(response.data);
+      } catch (error) {
+        console.error("Failed to fetch featured products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedProducts();
+  }, []);
+
   const productTypes = [
     { name: "PC Gaming", image: "/images/pc.png" },
     { name: "Laptops", image: "/images/laptop.png" },
     { name: "Smartphones", image: "/images/smartphone.png" },
     { name: "Gear", image: "/images/gear.png" },
     { name: "Card Gaming", image: "/images/card.png" },
-  ];
-
-  // Mock data for products
-  const mockProducts = [
-    {
-      id: 1,
-      name: "Gaming PC Pro",
-      price: 1299,
-      image: "/images/pc.png",
-      description: "High-performance gaming PC with RTX 3080",
-    },
-    {
-      id: 2,
-      name: "Ultra Laptop",
-      price: 999,
-      image: "/images/laptop.png",
-      description: "Powerful laptop for gaming and work",
-    },
-    {
-      id: 3,
-      name: "Pro Smartphone",
-      price: 799,
-      image: "/images/smartphone.png",
-      description: "Latest smartphone with amazing camera",
-    },
-    {
-      id: 4,
-      name: "Gaming Gear Set",
-      price: 299,
-      image: "/images/gear.png",
-      description: "Complete gaming peripherals set",
-    },
-    {
-      id: 5,
-      name: "RTX 4080",
-      price: 899,
-      image: "/images/card.png",
-      description: "High-end graphics card for gaming",
-    },
   ];
 
   return (
@@ -103,7 +91,7 @@ const HomePage: React.FC = () => {
           <Title level={2} className="text-center mb-8 !text-[#803535]">
             Featured Products
           </Title>
-          <ProductList products={mockProducts} />
+          <ProductList products={featuredProducts} loading={loading} />
         </div>
         <BestSeller />
         <NewProducts />

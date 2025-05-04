@@ -28,11 +28,13 @@ const FeaturedBrands: React.FC = () => {
           <Col key={brand.name} className="min-w-[180px]">
             <Card
               className="!flex !items-center !justify-center !rounded-xl !bg-[#fafbfc] !border-none hover:!shadow-lg transition-all cursor-pointer h-[120px]"
-              bodyStyle={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                height: "100%",
+              styles={{
+                body: {
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  height: "100%",
+                },
               }}
             >
               <img

@@ -1,129 +1,90 @@
-import React, { useState } from "react";
-import { Typography, Button, Tag, Rate } from "antd";
+import React, { useState, useEffect } from "react";
+import { Typography, Button, Tag, Rate, Spin } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import styles from "./NewProductsCarousel.module.css";
+import { api } from "../services/api";
+import { useNavigate } from "react-router-dom";
 
-const products = [
-  {
-    id: 1,
-    name: "MSI - 18'' GeForce RTX 5090 Laptop GPU - Intel Core Ultra 9 285HX",
-    image: "/images/new/msi-laptop.png",
-    price: 4899.99,
-    oldPrice: 5389.99,
-    badge: "AI Ready",
-    discount: "Save 9%",
-    play: true,
-    rating: 4,
-    reviews: 2,
-  },
-  {
-    id: 2,
-    name: "MSI Gaming GeForce RTX 5060 Ti Graphics Card RTX 5060 Ti 16G...",
-    image: "/images/new/msi-rtx5060.png",
-    price: 539.99,
-    play: true,
-    rating: 4,
-    reviews: 2,
-  },
-  {
-    id: 3,
-    name: "ASUS ROG G700TF (2025) Gaming Desktop PC, Intel Core Ultra 7...",
-    image: "/images/new/asus-pc.png",
-    price: 1389.99,
-    oldPrice: 1399.99,
-    rating: 2,
-    reviews: 2,
-  },
-  {
-    id: 4,
-    name: "MSI Prestige 16'' Intel Ultra 9 288V Laptop 32GB Memory 2 TB NVM...",
-    image: "/images/new/msi-prestige.png",
-    price: 1849.99,
-    badge: "Copilot+ PC",
-    rating: 2,
-    reviews: 2,
-  },
-  {
-    id: 5,
-    name: "CORSAIR VOID WIRELESS v2 Gaming Headset, White",
-    image: "/images/new/corsair-headset.png",
-    price: 119.99,
-    rating: 2,
-    reviews: 2,
-  },
-  {
-    id: 6,
-    name: "Rosewill NVMe SSD Cloner, M.2 Duplicator Dual Bay NVMe...",
-    image: "/images/new/rosewill-ssd.png",
-    price: 59.99,
-    play: true,
-    rating: 5,
-    reviews: 2,
-  },
-  {
-    id: 7,
-    name: "MSI - 18'' GeForce RTX 5090 Laptop GPU - Intel Core Ultra 9 285HX",
-    image: "/images/new/msi-laptop.png",
-    price: 4899.99,
-    oldPrice: 5389.99,
-    badge: "AI Ready",
-    discount: "Save 9%",
-    play: true,
-    rating: 4,
-    reviews: 2,
-  },
-  {
-    id: 8,
-    name: "MSI Gaming GeForce RTX 5060 Ti Graphics Card RTX 5060 Ti 16G...",
-    image: "/images/new/msi-rtx5060.png",
-    price: 539.99,
-    play: true,
-    rating: 4,
-    reviews: 2,
-  },
-  {
-    id: 9,
-    name: "ASUS ROG G700TF (2025) Gaming Desktop PC, Intel Core Ultra 7...",
-    image: "/images/new/asus-pc.png",
-    price: 1389.99,
-    oldPrice: 1399.99,
-    rating: 2,
-    reviews: 2,
-  },
-  {
-    id: 10,
-    name: "MSI Prestige 16'' Intel Ultra 9 288V Laptop 32GB Memory 2 TB NVM...",
-    image: "/images/new/msi-prestige.png",
-    price: 1849.99,
-    badge: "Copilot+ PC",
-    rating: 2,
-    reviews: 2,
-  },
-  {
-    id: 11,
-    name: "CORSAIR VOID WIRELESS v2 Gaming Headset, White",
-    image: "/images/new/corsair-headset.png",
-    price: 119.99,
-    rating: 2,
-    reviews: 2,
-  },
-  {
-    id: 12,
-    name: "Rosewill NVMe SSD Cloner, M.2 Duplicator Dual Bay NVMe...",
-    image: "/images/new/rosewill-ssd.png",
-    price: 59.99,
-    play: true,
-    rating: 5,
-    reviews: 2,
-  },
-];
+interface ApiProduct {
+  id: number;
+  productCode: string;
+  productName: string;
+  productType: number;
+  price: number;
+  quantity: number;
+  quantityLimit: number;
+  rating: number;
+  description: string;
+  image: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Product {
+  id: number;
+  name: string;
+  image: string;
+  price: number;
+  oldPrice?: number;
+  badge?: string;
+  discount?: string;
+  play?: boolean;
+  rating: number;
+  reviews?: number;
+  productCode: string;
+  productType: number;
+  quantity: number;
+  quantityLimit: number;
+  description: string;
+}
 
 const PRODUCTS_PER_PAGE = 6;
 
 const BestSeller: React.FC = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [startIndex, setStartIndex] = useState(0);
   const canPrev = startIndex > 0;
   const canNext = startIndex + PRODUCTS_PER_PAGE < products.length;
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await api.getPopularProducts();
+        // Map the response data to match our Product interface
+        const mappedProducts = response.data.map((product: ApiProduct) => ({
+          id: product.id,
+          name: product.productName,
+          image: product.image,
+          price: product.price,
+          rating: product.rating,
+          badge:
+            product.productType === 1
+              ? "Smartphone"
+              : product.productType === 2
+              ? "Laptop"
+              : product.productType === 3
+              ? "Accessories"
+              : "Tablet",
+          reviews: Math.floor(Math.random() * 100) + 1, // Adding random reviews count for demo
+          productCode: product.productCode,
+          productType: product.productType,
+          quantity: product.quantity,
+          quantityLimit: product.quantityLimit,
+          description: product.description,
+        }));
+        setProducts(mappedProducts);
+      } catch (error) {
+        console.error("Failed to fetch popular products:", error);
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const handlePrev = () => {
     if (canPrev) setStartIndex(startIndex - 1);
@@ -132,10 +93,22 @@ const BestSeller: React.FC = () => {
     if (canNext) setStartIndex(startIndex + 1);
   };
 
-  const visibleProducts = products.slice(
-    startIndex,
-    startIndex + PRODUCTS_PER_PAGE
-  );
+  const handleProductClick = (productId: number) => {
+    navigate(`/product/${productId}`);
+  };
+
+  const visibleProducts =
+    loading || !Array.isArray(products)
+      ? []
+      : products.slice(startIndex, startIndex + PRODUCTS_PER_PAGE);
+
+  if (loading) {
+    return (
+      <div className="w-full mt-10 flex justify-center">
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full mt-10">
@@ -170,7 +143,11 @@ const BestSeller: React.FC = () => {
         )}
         <div className="flex justify-between items-stretch">
           {visibleProducts.map((p) => (
-            <div key={p.id} className="px-2 flex-1 min-w-0 max-w-[260px]">
+            <div
+              key={p.id}
+              className="px-2 flex-1 min-w-0 max-w-[260px] cursor-pointer"
+              onClick={() => handleProductClick(p.id)}
+            >
               <div className="flex flex-col items-start">
                 <div
                   style={{ minHeight: 32 }}
