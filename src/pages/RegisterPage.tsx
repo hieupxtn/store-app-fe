@@ -38,11 +38,11 @@ const RegisterPage: React.FC = () => {
       console.log("=== REGISTER RESPONSE ===");
       console.log("Full response:", response);
 
-      if (response.errCode === 0) {
+      if (response && response.user) {
         message.success("Registration successful! Please login.");
         navigate("/login");
       } else {
-        message.error(response.message || "Registration failed");
+        message.error("Registration failed");
       }
     } catch (error: unknown) {
       console.error("=== REGISTER ERROR ===");

@@ -8,7 +8,6 @@ import {
   Select,
   Checkbox,
   Slider,
-  Input,
   Button,
 } from "antd";
 import { DownOutlined, UpOutlined } from "@ant-design/icons";
@@ -16,6 +15,7 @@ import ProductList from "../components/ProductList";
 import "../styles/LaptopPage.css";
 import AppHeader from "../common/AppHeader";
 import AppFooter from "../common/AppFooter";
+import { api } from "../services/api";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -26,6 +26,17 @@ interface FilterState {
   brands: string[];
   priceRange: [number, number];
   rating: number | undefined;
+}
+
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  image: string;
+  description: string;
+  rating: number;
+  category: string;
+  brand: string;
 }
 
 const ProductsPage: React.FC = () => {
@@ -39,41 +50,22 @@ const ProductsPage: React.FC = () => {
     priceRange: [0, 5000],
     rating: undefined,
   });
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data - replace with actual API call
-  const products = [
-    {
-      id: 1,
-      name: "ASUS ROG Zephyrus G14",
-      price: 1499.99,
-      image: "https://via.placeholder.com/300x200",
-      description: "AMD Ryzen 9, 16GB RAM, 1TB SSD, RTX 3060",
-      rating: 4.5,
-      category: "Laptops",
-      brand: "ASUS",
-    },
-    {
-      id: 2,
-      name: "iPhone 13 Pro",
-      price: 999.99,
-      image: "https://via.placeholder.com/300x200",
-      description: "A15 Bionic, 128GB, 6.1-inch Super Retina XDR",
-      rating: 4.8,
-      category: "Phones",
-      brand: "Apple",
-    },
-    {
-      id: 3,
-      name: "Samsung QLED TV",
-      price: 1299.99,
-      image: "https://via.placeholder.com/300x200",
-      description: "65-inch 4K QLED Smart TV",
-      rating: 4.6,
-      category: "TVs",
-      brand: "Samsung",
-    },
-    // Add more products here
-  ];
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await api.getAllProducts();
+        setProducts(response.products);
+      } catch (error) {
+        console.error("Failed to fetch products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   // Get search parameters from URL
   useEffect(() => {
@@ -126,8 +118,10 @@ const ProductsPage: React.FC = () => {
   // Filter products based on search and filters
   const filteredProducts = products.filter((product) => {
     const matchesSearch =
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchQuery.toLowerCase());
+      (product.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (product.description?.toLowerCase() || "").includes(
+        searchQuery.toLowerCase()
+      );
 
     const matchesCategory =
       activeFilters.categories.length === 0 ||
@@ -205,8 +199,7 @@ const ProductsPage: React.FC = () => {
                         <Checkbox value="ASUS">ASUS</Checkbox>
                         <Checkbox value="Apple">Apple</Checkbox>
                         <Checkbox value="Samsung">Samsung</Checkbox>
-                        <Checkbox value="Dell">Dell</Checkbox>
-                        <Checkbox value="HP">HP</Checkbox>
+                        <Checkbox value="Logitech">Logitech</Checkbox>
                       </Checkbox.Group>
                     </div>
                   </div>
@@ -225,36 +218,29 @@ const ProductsPage: React.FC = () => {
                           value as [number, number]
                         )
                       }
-                      className="mt-2"
                     />
-                    <div className="flex justify-between mt-2">
-                      <Input
-                        value={activeFilters.priceRange[0]}
-                        style={{ width: 100 }}
-                        prefix="$"
-                      />
-                      <Input
-                        value={activeFilters.priceRange[1]}
-                        style={{ width: 100 }}
-                        prefix="$"
-                      />
+                    <div className="flex justify-between text-xs">
+                      <span>${activeFilters.priceRange[0]}</span>
+                      <span>${activeFilters.priceRange[1]}</span>
                     </div>
                   </div>
 
                   {/* Rating */}
                   <div>
-                    <Text strong>Minimum Rating</Text>
-                    <Select
-                      className="w-full mt-2"
-                      placeholder="Select minimum rating"
-                      value={activeFilters.rating}
-                      onChange={(value) => handleFilterChange("rating", value)}
-                    >
-                      <Option value={4}>4 stars & up</Option>
-                      <Option value={3}>3 stars & up</Option>
-                      <Option value={2}>2 stars & up</Option>
-                      <Option value={1}>1 star & up</Option>
-                    </Select>
+                    <Text strong>Rating</Text>
+                    <Slider
+                      min={0}
+                      max={5}
+                      step={0.5}
+                      value={activeFilters.rating || 0}
+                      onChange={(value) =>
+                        handleFilterChange("rating", value as number)
+                      }
+                    />
+                    <div className="flex justify-between text-xs">
+                      <span>0</span>
+                      <span>5</span>
+                    </div>
                   </div>
                 </div>
               )}
@@ -287,7 +273,7 @@ const ProductsPage: React.FC = () => {
               </div>
 
               {/* Product List */}
-              <ProductList products={filteredProducts} />
+              <ProductList products={filteredProducts} loading={loading} />
             </div>
           </Col>
         </Row>

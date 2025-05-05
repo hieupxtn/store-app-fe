@@ -13,40 +13,26 @@ import { useNavigate } from "react-router-dom";
 import { wishlistService } from "../services/wishlistService";
 import { cartService } from "../services/cartService";
 
-interface ApiProduct {
-  id: number;
-  productCode: string;
-  productName: string;
-  productType: number;
-  price: number;
-  quantity: number;
-  quantityLimit: number;
-  rating: number;
-  description: string;
-  image: string;
-  createdAt: string;
-  updatedAt: string;
-}
+const PRODUCTS_PER_PAGE = 6;
 
+// Định nghĩa lại interface Product
 interface Product {
   id: number;
-  name: string;
-  image: string;
-  price: number;
+  name: string | null;
+  image: string | null;
+  price: number | null;
   oldPrice?: number;
   badge?: string;
   discount?: string;
   play?: boolean;
-  rating: number;
+  rating: number | null;
   reviews?: number;
-  productCode: string;
-  productType: number;
-  quantity: number;
+  productCode: string | null;
+  productType: number | null;
+  quantity: number | null;
   quantityLimit: number;
-  description: string;
+  description: string | null;
 }
-
-const PRODUCTS_PER_PAGE = 6;
 
 const BestSeller: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -61,28 +47,45 @@ const BestSeller: React.FC = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await api.getPopularProducts();
-        const mappedProducts = response.data.map((product: ApiProduct) => ({
-          id: product.id,
-          name: product.productName,
-          image: product.image,
-          price: product.price,
-          rating: product.rating,
-          badge:
-            product.productType === 1
-              ? "Smartphone"
-              : product.productType === 2
-              ? "Laptop"
-              : product.productType === 3
-              ? "Accessories"
-              : "Tablet",
-          reviews: Math.floor(Math.random() * 100) + 1,
-          productCode: product.productCode,
-          productType: product.productType,
-          quantity: product.quantity,
-          quantityLimit: product.quantityLimit,
-          description: product.description,
-        }));
+        const response = await api.getBestSellers();
+        const mappedProducts = (response.products || []).map(
+          (product: {
+            id: number;
+            productCode: string | null;
+            productName: string | null;
+            productTypeId: number | null;
+            price: number | null;
+            quantity: number | null;
+            quantityLimit?: number | null;
+            rating: number | null;
+            description: string | null;
+            image: string | null;
+            createdAt: string;
+            updatedAt: string;
+            ProductType?: { name: string } | null;
+          }) => ({
+            id: product.id,
+            name: product.productName,
+            image: product.image,
+            price: product.price,
+            rating: product.rating,
+            badge:
+              product.ProductType?.name ||
+              (product.productTypeId === 1
+                ? "Smartphone"
+                : product.productTypeId === 2
+                ? "Laptop"
+                : product.productTypeId === 3
+                ? "Accessories"
+                : "Tablet"),
+            reviews: Math.floor(Math.random() * 100) + 1,
+            productCode: product.productCode,
+            productType: product.productTypeId,
+            quantity: product.quantity,
+            quantityLimit: product.quantityLimit ?? 0,
+            description: product.description,
+          })
+        );
         setProducts(mappedProducts);
       } catch (error) {
         console.error("Failed to fetch popular products:", error);
@@ -143,10 +146,10 @@ const BestSeller: React.FC = () => {
     } else {
       const wishlistItem = {
         id: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.image,
-        rating: product.rating,
+        name: product.name || "",
+        price: product.price || 0,
+        image: product.image || "",
+        rating: product.rating || 0,
       };
       wishlistService.addToWishlist(wishlistItem);
       message.success("Added to wishlist!");
@@ -160,9 +163,9 @@ const BestSeller: React.FC = () => {
     e.stopPropagation();
     const cartItem = {
       id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.image,
+      name: product.name || "",
+      price: product.price || 0,
+      image: product.image || "",
       quantity: 1,
     };
     cartService.addToCart(cartItem);
@@ -251,8 +254,8 @@ const BestSeller: React.FC = () => {
                 </div>
                 <div className="relative w-full flex justify-center">
                   <img
-                    src={p.image}
-                    alt={p.name}
+                    src={p.image || ""}
+                    alt={p.name || ""}
                     className="rounded-lg object-contain w-full h-[150px] bg-white"
                   />
                   <div className="absolute top-4 right-4 flex gap-2">
@@ -313,11 +316,11 @@ const BestSeller: React.FC = () => {
                 )}
                 <div className="flex items-end gap-2 mt-1">
                   <span className="text-2xl font-bold text-[#222]">
-                    ${p.price.toLocaleString()}
+                    ${p.price ? p.price.toLocaleString() : 0}
                   </span>
                   {p.oldPrice && (
                     <span className="text-sm line-through text-gray-400">
-                      ${p.oldPrice.toLocaleString()}
+                      ${p.oldPrice ? p.oldPrice.toLocaleString() : 0}
                     </span>
                   )}
                 </div>

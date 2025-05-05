@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Layout,
   Card,
@@ -9,6 +10,8 @@ import {
   Button,
   message,
   Tag,
+  Spin,
+  Alert,
 } from "antd";
 import {
   UserOutlined,
@@ -38,61 +41,52 @@ const AdminDashboard: React.FC = () => {
     null
   );
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const checkAdminAccess = () => {
-      console.log("Checking admin access...");
-      const userData = localStorage.getItem("user");
-      console.log("User data from localStorage:", userData);
-
-      if (userData) {
-        try {
-          const parsedUser = JSON.parse(userData);
-          console.log("Parsed user data:", parsedUser);
-          setUser(parsedUser);
-
-          if (parsedUser.typeRole !== "admin") {
-            console.log("User is not admin. Redirecting to home...");
-            message.error("You don't have permission to access this page");
-            navigate("/");
-          } else {
-            console.log("User is admin. Access granted.");
-          }
-        } catch (error) {
-          console.error("Error parsing user data:", error);
-          message.error("Error loading user data");
-          navigate("/login");
-        }
-      } else {
-        console.log("No user data found. Redirecting to login...");
-        message.error("Please login first");
-        navigate("/login");
-      }
-    };
-
-    const fetchDashboardData = async () => {
+  // Check admin access
+  const checkAdminAccess = useCallback(() => {
+    const userData = localStorage.getItem("user");
+    if (userData) {
       try {
-        setLoading(true);
-        const response = await api.getDashboardData();
-        if (response.errCode === 0) {
-          setDashboardData(response.data);
-        } else {
-          message.error(response.message || "Failed to fetch dashboard data");
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+        if (parsedUser.typeRole !== "admin") {
+          message.error("You don't have permission to access this page");
+          navigate("/");
         }
       } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-        message.error(
-          "Failed to fetch dashboard data. Please try again later."
-        );
-      } finally {
-        setLoading(false);
+        message.error("Error loading user data");
+        navigate("/login");
       }
-    };
+    } else {
+      message.error("Please login first");
+      navigate("/login");
+    }
+  }, [navigate]);
 
+  // Fetch dashboard data
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await api.getDashboardData();
+      if (response.errCode === 0) {
+        setDashboardData(response.data);
+      } else {
+        setError(response.message || "Failed to fetch dashboard data");
+      }
+    } catch (error) {
+      setError("Failed to fetch dashboard data. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
     checkAdminAccess();
     fetchDashboardData();
-  }, [navigate]);
+  }, [checkAdminAccess, fetchDashboardData]);
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -158,10 +152,10 @@ const AdminDashboard: React.FC = () => {
     },
   ];
 
-  const handleViewOrder = (orderId: number) => {
-    // TODO: Implement view order details
-    console.log("View order:", orderId);
-  };
+  const handleViewOrder = useCallback((orderId: number) => {
+    // Có thể mở modal hoặc chuyển trang chi tiết đơn hàng ở đây
+    message.info(`View order: ${orderId}`);
+  }, []);
 
   if (!user) {
     return null;
@@ -171,109 +165,128 @@ const AdminDashboard: React.FC = () => {
     <Layout className="flex flex-col min-h-screen w-full">
       <AppHeader />
       <Content className="flex-grow bg-gray-100">
-        <div className="w-full px-4 py-8 min-h-[751px]">
+        <div className="w-full px-4 py-8 min-h-[751px] max-w-7xl mx-auto">
           <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
 
+          {/* Loading Spinner */}
+          {loading && (
+            <div className="flex justify-center items-center min-h-[400px]">
+              <Spin size="large" tip="Loading dashboard..." />
+            </div>
+          )}
+
+          {/* Error Alert */}
+          {!loading && error && (
+            <Alert
+              message="Error"
+              description={error}
+              type="error"
+              showIcon
+              className="mb-6"
+            />
+          )}
+
           {/* Statistics Cards */}
-          <Row gutter={[24, 24]} className="mb-8">
-            <Col xs={24} sm={12} md={6}>
-              <Card>
-                <Statistic
-                  title="Total Users"
-                  value={dashboardData?.totalUsers || 0}
-                  prefix={<UserOutlined />}
-                  valueStyle={{ color: "#1890ff" }}
-                  loading={loading}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Card>
-                <Statistic
-                  title="Total Orders"
-                  value={dashboardData?.totalOrders || 0}
-                  prefix={<ShoppingCartOutlined />}
-                  valueStyle={{ color: "#52c41a" }}
-                  loading={loading}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Card>
-                <Statistic
-                  title="Total Revenue"
-                  value={dashboardData?.totalRevenue || 0}
-                  prefix={<DollarOutlined />}
-                  valueStyle={{ color: "#722ed1" }}
-                  loading={loading}
-                  formatter={(value) => `$${Number(value).toFixed(2)}`}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Card>
-                <Statistic
-                  title="Total Products"
-                  value={dashboardData?.totalProducts || 0}
-                  prefix={<ProductOutlined />}
-                  valueStyle={{ color: "#faad14" }}
-                  loading={loading}
-                />
-              </Card>
-            </Col>
-          </Row>
+          {!loading && !error && (
+            <Row gutter={[24, 24]} className="mb-8">
+              <Col xs={24} sm={12} md={6}>
+                <Card>
+                  <Statistic
+                    title="Total Users"
+                    value={dashboardData?.totalUsers || 0}
+                    prefix={<UserOutlined />}
+                    valueStyle={{ color: "#1890ff" }}
+                  />
+                </Card>
+              </Col>
+              <Col xs={24} sm={12} md={6}>
+                <Card>
+                  <Statistic
+                    title="Total Orders"
+                    value={dashboardData?.totalOrders || 0}
+                    prefix={<ShoppingCartOutlined />}
+                    valueStyle={{ color: "#52c41a" }}
+                  />
+                </Card>
+              </Col>
+              <Col xs={24} sm={12} md={6}>
+                <Card>
+                  <Statistic
+                    title="Total Revenue"
+                    value={dashboardData?.totalRevenue || 0}
+                    prefix={<DollarOutlined />}
+                    valueStyle={{ color: "#722ed1" }}
+                    formatter={(value) => `$${Number(value).toFixed(2)}`}
+                  />
+                </Card>
+              </Col>
+              <Col xs={24} sm={12} md={6}>
+                <Card>
+                  <Statistic
+                    title="Total Products"
+                    value={dashboardData?.totalProducts || 0}
+                    prefix={<ProductOutlined />}
+                    valueStyle={{ color: "#faad14" }}
+                  />
+                </Card>
+              </Col>
+            </Row>
+          )}
 
           {/* Recent Orders Table */}
-          <Card title="Recent Orders" className="mb-8">
-            <Table
-              columns={columns}
-              dataSource={dashboardData?.recentOrders || []}
-              rowKey="id"
-              pagination={{ pageSize: 5 }}
-              scroll={{ x: 1000 }}
-              loading={loading}
-            />
-          </Card>
+          {!loading && !error && (
+            <Card title="Recent Orders" className="mb-8">
+              <Table
+                columns={columns}
+                dataSource={dashboardData?.recentOrders || []}
+                rowKey="id"
+                pagination={{ pageSize: 5 }}
+                scroll={{ x: 1000 }}
+              />
+            </Card>
+          )}
 
           {/* Quick Actions */}
-          <Row gutter={[16, 16]}>
-            <Col xs={24} sm={12} md={6}>
-              <Button
-                type="primary"
-                block
-                onClick={() => navigate("/admin/users")}
-              >
-                Manage Users
-              </Button>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Button
-                type="primary"
-                block
-                onClick={() => navigate("/admin/products")}
-              >
-                Manage Products
-              </Button>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Button
-                type="primary"
-                block
-                onClick={() => navigate("/admin/orders")}
-              >
-                Manage Orders
-              </Button>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Button
-                type="primary"
-                block
-                onClick={() => navigate("/admin/categories")}
-              >
-                Manage Categories
-              </Button>
-            </Col>
-          </Row>
+          {!loading && !error && (
+            <Row gutter={[16, 16]}>
+              <Col xs={24} sm={12} md={6}>
+                <Button
+                  type="primary"
+                  block
+                  onClick={() => navigate("/admin/users")}
+                >
+                  Manage Users
+                </Button>
+              </Col>
+              <Col xs={24} sm={12} md={6}>
+                <Button
+                  type="primary"
+                  block
+                  onClick={() => navigate("/admin/products")}
+                >
+                  Manage Products
+                </Button>
+              </Col>
+              <Col xs={24} sm={12} md={6}>
+                <Button
+                  type="primary"
+                  block
+                  onClick={() => navigate("/admin/orders")}
+                >
+                  Manage Orders
+                </Button>
+              </Col>
+              <Col xs={24} sm={12} md={6}>
+                <Button
+                  type="primary"
+                  block
+                  onClick={() => navigate("/admin/categories")}
+                >
+                  Manage Categories
+                </Button>
+              </Col>
+            </Row>
+          )}
         </div>
       </Content>
       <AppFooter />

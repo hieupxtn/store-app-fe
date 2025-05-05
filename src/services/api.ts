@@ -17,28 +17,31 @@ interface LoginResponse {
 }
 
 interface RegisterResponse {
-  errCode: number;
-  message: string;
-  data?: {
+  user: {
     id: number;
     email: string;
+    password: string;
     firstName: string;
     lastName: string;
-    typeRole: string;
-    keyRole: string;
+    address: string;
+    gender: boolean;
+    role: string;
+    updatedAt: string;
+    createdAt: string;
   };
 }
 
 interface UpdateUserResponse {
-  errCode: number;
-  message: string;
-  data?: {
+  user: {
     id: number;
     email: string;
     firstName: string;
     lastName: string;
-    typeRole: string;
-    keyRole: string;
+    address: string;
+    gender: boolean;
+    role: string;
+    updatedAt: string;
+    createdAt: string;
   };
 }
 
@@ -180,12 +183,12 @@ export const api = {
     firstName: string;
     lastName: string;
   }) => {
-    const response = await axiosInstance.post<RegisterResponse>('/auth/register', data);
+    const response = await axiosInstance.post<RegisterResponse>('/api/register', data);
     return response.data;
   },
   
   logout: async () => {
-    const response = await axiosInstance.post<LogoutResponse>('/auth/logout');
+    const response = await axiosInstance.post<LogoutResponse>('/api/logout');
     return response.data;
   },
 
@@ -198,7 +201,7 @@ export const api = {
     firstName: string;
     lastName: string;
   }) => {
-    const response = await axiosInstance.put<UpdateUserResponse>(`/api/update-user/${userId}`, data);
+    const response = await axiosInstance.put<UpdateUserResponse>(`/api/users/${userId}`, data);
     return response.data;
   },
   
@@ -212,7 +215,7 @@ export const api = {
       }),
   
   getProductById: (id: number) => 
-    axiosInstance.get(`/api/get-product-detail/${id}`)
+    axiosInstance.get(`/api/products/${id}`)
       .then(response => response.data)
       .catch(error => {
         console.error('Get product by id error:', error);
@@ -255,7 +258,7 @@ export const api = {
 
   // New products endpoint
   getNewProducts: () =>
-    axiosInstance.get('/api/get-new-products')
+    axiosInstance.get('/api/new-products')
       .then(response => response.data)
       .catch(error => {
         console.error('Get new products error:', error);
@@ -264,8 +267,8 @@ export const api = {
 
   // Featured products endpoint
   getFeaturedProducts: () =>
-    axiosInstance.get('/api/get-featured-products')
-      .then(response => response.data)
+    axiosInstance.get('/api/featured-products')
+      .then(response => response.data.products)
       .catch(error => {
         console.error('Get featured products error:', error);
         throw error;
@@ -340,4 +343,18 @@ export const api = {
       throw error;
     }
   },
+
+  getAllProducts: async () => {
+    const response = await axiosInstance.get('/api/products');
+    return response.data;
+  },
+
+  // Best sellers endpoint
+  getBestSellers: () =>
+    axiosInstance.get('/api/best-sellers')
+      .then(response => response.data)
+      .catch(error => {
+        console.error('Get best sellers error:', error);
+        throw error;
+      }),
 }; 

@@ -41,6 +41,15 @@ interface ProductDetailProps {
   };
 }
 
+const PRODUCT_TYPE_MAP: Record<number, string> = {
+  1: "Phone",
+  2: "Laptop",
+  3: "Tablet",
+  4: "Smartwatch",
+  5: "Headphone",
+  6: "Camera",
+};
+
 const ProductDetail: React.FC<ProductDetailProps> = () => {
   const [quantity, setQuantity] = useState(1);
   const [isInWishlist, setIsInWishlist] = useState(false);
@@ -52,8 +61,8 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
     const fetchProduct = async () => {
       try {
         const response = await api.getProductById(Number(id));
-        setProduct(response.data);
-        setIsInWishlist(wishlistService.isInWishlist(response.data.id));
+        setProduct(response.product);
+        setIsInWishlist(wishlistService.isInWishlist(response.product.id));
       } catch (error) {
         console.error("Error fetching product:", error);
       } finally {
@@ -196,7 +205,9 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                   </div>
                   <div className="flex justify-between py-2 border-b">
                     <Text strong>Product Type:</Text>
-                    <Text>{product.productType}</Text>
+                    <Text>
+                      {PRODUCT_TYPE_MAP[product.productType] || "Unknown"}
+                    </Text>
                   </div>
                   <div className="flex justify-between py-2 border-b">
                     <Text strong>Created At:</Text>

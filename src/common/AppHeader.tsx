@@ -54,19 +54,15 @@ const AppHeader: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      const response = await api.logout();
-      if (response.errCode === 0) {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        setUser(null);
-        message.success(response.message);
-        navigate("/login");
-      } else {
-        message.error(response.message || "Logout failed");
-      }
+      await api.logout();
     } catch (error) {
       console.error("Logout error:", error);
-      message.error("An error occurred during logout");
+    } finally {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      setUser(null);
+      message.success("Logged out successfully");
+      navigate("/");
     }
   };
 

@@ -30,7 +30,7 @@ const HomePage: React.FC = () => {
     const fetchFeaturedProducts = async () => {
       try {
         const response = await api.getFeaturedProducts();
-        setFeaturedProducts(response.data);
+        setFeaturedProducts(response);
       } catch (error) {
         console.error("Failed to fetch featured products:", error);
       } finally {

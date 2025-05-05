@@ -13,21 +13,6 @@ import { useNavigate } from "react-router-dom";
 import { wishlistService } from "../services/wishlistService";
 import { cartService } from "../services/cartService";
 
-interface ApiProduct {
-  id: number;
-  productCode: string;
-  productName: string;
-  productType: number;
-  price: number;
-  quantity: number;
-  quantityLimit: number;
-  rating: number;
-  description: string;
-  image: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 interface Product {
   id: number;
   name: string;
@@ -62,30 +47,47 @@ const NewProducts: React.FC = () => {
     const fetchProducts = async () => {
       try {
         const response = await api.getNewProducts();
-        const mappedProducts = response.data.map((product: ApiProduct) => ({
-          id: product.id,
-          name: product.productName,
-          image: product.image,
-          price: product.price,
-          rating: product.rating,
-          badge:
-            product.productType === 1
-              ? "Smartphone"
-              : product.productType === 2
-              ? "Laptop"
-              : product.productType === 3
-              ? "Accessories"
-              : "Tablet",
-          reviews: Math.floor(Math.random() * 100) + 1,
-          productCode: product.productCode,
-          productType: product.productType,
-          quantity: product.quantity,
-          quantityLimit: product.quantityLimit,
-          description: product.description,
-        }));
+        const mappedProducts = (response.products || [])
+          .filter((product: unknown) => {
+            const p = product as {
+              id?: number;
+              productName?: string;
+              price?: number;
+            };
+            return p && p.id && p.productName && p.price;
+          })
+          .map((product: unknown) => {
+            const p = product as {
+              id: number;
+              productName: string;
+              image: string;
+              price: number;
+              rating: number;
+              ProductType?: { name?: string };
+              productCode: string;
+              productTypeId: number;
+              quantity: number;
+              quantityLimit?: number;
+              description: string;
+            };
+            return {
+              id: p.id,
+              name: p.productName,
+              image: p.image,
+              price: p.price,
+              rating: p.rating,
+              badge: p.ProductType?.name || "",
+              reviews: Math.floor(Math.random() * 100) + 1,
+              productCode: p.productCode,
+              productType: p.productTypeId,
+              quantity: p.quantity,
+              quantityLimit: p.quantityLimit ?? 0,
+              description: p.description,
+            };
+          });
         setProducts(mappedProducts);
       } catch (error) {
-        console.error("Failed to fetch popular products:", error);
+        console.error("Failed to fetch new products:", error);
         setProducts([]);
       } finally {
         setLoading(false);

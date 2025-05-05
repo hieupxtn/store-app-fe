@@ -74,14 +74,14 @@ const ProfilePage: React.FC = () => {
       console.log("=== UPDATE PROFILE RESPONSE ===");
       console.log("Full response:", response);
 
-      if (response.errCode === 0) {
+      if (response && response.user) {
         message.success("Profile updated successfully!");
         // Update local storage with new user data
-        const updatedUser = { ...user, ...values };
+        const updatedUser = { ...user, ...response.user };
         localStorage.setItem("user", JSON.stringify(updatedUser));
         setUser(updatedUser);
       } else {
-        message.error(response.message || "Failed to update profile");
+        message.error("Failed to update profile");
       }
     } catch (error: unknown) {
       console.error("=== UPDATE PROFILE ERROR ===");

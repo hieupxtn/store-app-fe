@@ -11,6 +11,8 @@ import NotFound from "../pages/NotFound";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import UserListPage from "../pages/admin/UserListPage";
 import ProductListPage from "../pages/admin/ProductListPage";
+import ProductsPage from "../pages/ProductsPage";
+import BrandsPage from "../pages/BrandsPage";
 
 const AppRouter: React.FC = () => {
   return (
@@ -23,6 +25,8 @@ const AppRouter: React.FC = () => {
         <Route path="/product/:id" element={<ProductDetailPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/wishlist" element={<WishlistPage />} />
+        <Route path="/products" element={<ProductsPage />} />
+        <Route path="/brands" element={<BrandsPage />} />
 
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminDashboard />} />

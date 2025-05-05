@@ -27,19 +27,6 @@ interface ProductDetail {
   totalReviews: number;
 }
 
-interface Review {
-  id: number;
-  userId: number;
-  productId: number;
-  rating: number;
-  comment: string;
-  createdAt: string;
-  User: {
-    firstName: string;
-    lastName: string;
-  };
-}
-
 interface RelatedProduct {
   id: number;
   productName: string;
@@ -51,7 +38,6 @@ interface RelatedProduct {
 const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [product, setProduct] = useState<ProductDetail | null>(null);
-  const [reviews, setReviews] = useState<Review[]>([]);
   const [relatedProducts, setRelatedProducts] = useState<RelatedProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [isInWishlist, setIsInWishlist] = useState(false);
@@ -62,9 +48,8 @@ const ProductDetailPage: React.FC = () => {
       try {
         setLoading(true);
         const response = await api.getProductById(Number(id));
-        if (response.errCode === 0 && response.data) {
-          setProduct(response.data.product);
-          setReviews(response.data.reviews || []);
+        if (response) {
+          setProduct(response.product);
           setRelatedProducts(response.data.relatedProducts || []);
           setIsInWishlist(
             wishlistService.isInWishlist(response.data.product.id)
@@ -151,10 +136,6 @@ const ProductDetailPage: React.FC = () => {
                 src={product.image}
                 alt={product.productName}
                 className="w-full h-auto object-contain"
-                onError={(e) => {
-                  e.currentTarget.src =
-                    "https://via.placeholder.com/400x400?text=No+Image";
-                }}
               />
             </Card>
           </Col>
@@ -229,29 +210,6 @@ const ProductDetailPage: React.FC = () => {
             </Card>
           </Col>
         </Row>
-
-        {/* Reviews Section */}
-        <div className="mt-8">
-          <h2 className="text-xl font-bold mb-4">Customer Reviews</h2>
-          {reviews.length > 0 ? (
-            reviews.map((review) => (
-              <Card key={review.id} className="mb-4">
-                <div className="flex items-center mb-2">
-                  <Rate disabled defaultValue={review.rating} />
-                  <span className="ml-2 font-semibold">
-                    {review.User.firstName} {review.User.lastName}
-                  </span>
-                  <span className="ml-2 text-gray-500">
-                    {new Date(review.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-                <p>{review.comment}</p>
-              </Card>
-            ))
-          ) : (
-            <p>No reviews yet.</p>
-          )}
-        </div>
 
         <div className="mt-8">
           <h2 className="text-xl font-bold mb-4">Related Products</h2>
