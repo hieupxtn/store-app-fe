@@ -1,18 +1,95 @@
 import React, { useEffect, useState } from "react";
-import { Layout, Col, Badge, Button, Avatar } from "antd";
-import { Link } from "react-router-dom";
+import { Layout, Col, Badge, Button, Avatar, Dropdown, message } from "antd";
+import { Link, useNavigate } from "react-router-dom";
 import CustomSearch from "./SearchBox";
-import { UserOutlined, ShoppingCartOutlined } from "@ant-design/icons";
+import {
+  UserOutlined,
+  ShoppingCartOutlined,
+  HeartOutlined,
+  LogoutOutlined,
+} from "@ant-design/icons";
 import BaseDropdown from "./BaseDropdown";
+import { cartService } from "../services/cartService";
+import { wishlistService } from "../services/wishlistService";
+import { api } from "../services/api";
 
 const { Header } = Layout;
 
+interface UserData {
+  id: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  typeRole: string;
+  keyRole: string;
+}
+
 const AppHeader: React.FC = () => {
-  const [cartCount, setCartCount] = useState(2);
+  const [cartCount, setCartCount] = useState(0);
+  const [wishlistCount, setWishlistCount] = useState(0);
+  const [user, setUser] = useState<UserData | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    setCartCount(0);
-  }, [cartCount]);
+    const updateCounts = () => {
+      const cart = cartService.getCart();
+      const wishlist = wishlistService.getWishlist();
+      setCartCount(cart.reduce((sum, item) => sum + item.quantity, 0));
+      setWishlistCount(wishlist.length);
+    };
+
+    // Check for user data
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      setUser(JSON.parse(userData));
+    }
+
+    // Initial counts
+    updateCounts();
+
+    // Listen for storage changes to update counts
+    window.addEventListener("storage", updateCounts);
+    return () => window.removeEventListener("storage", updateCounts);
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      const response = await api.logout();
+      if (response.errCode === 0) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        setUser(null);
+        message.success(response.message);
+        navigate("/login");
+      } else {
+        message.error(response.message || "Logout failed");
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+      message.error("An error occurred during logout");
+    }
+  };
+
+  const userMenuItems = [
+    {
+      key: "profile",
+      label: "Profile",
+      icon: <UserOutlined />,
+      onClick: () => navigate("/profile"),
+    },
+    {
+      key: "logout",
+      label: "Logout",
+      icon: <LogoutOutlined />,
+      onClick: handleLogout,
+    },
+  ];
+
+  const handleSearch = (value: string) => {
+    if (value.trim()) {
+      navigate(`/products?search=${encodeURIComponent(value)}`);
+    }
+  };
 
   return (
     <Header className="!bg-[#002d6a] flex items-center justify-center px-6 !shadow-md !sticky top-0 z-10">
@@ -33,17 +110,40 @@ const AppHeader: React.FC = () => {
         <BaseDropdown />
       </Col>
       <Col className="flex items-center justify-center w-[30%] h-full">
-        <CustomSearch onSearch={() => console.log("first")} />
+        <CustomSearch onSearch={handleSearch} />
       </Col>
       <Col className="flex items-center gap-4">
-        <Link to="/login" className="!text-blue-100 hover:text-blue-600">
-          <Button
-            type="text"
-            icon={<UserOutlined className="!text-blue-100 !text-xl" />}
-            className="hidden md:inline-flex !text-lg !text-blue-100"
-          >
-            Login
-          </Button>
+        {user ? (
+          <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
+            <Button
+              type="text"
+              className="hidden md:inline-flex !text-lg !text-blue-100"
+            >
+              <Avatar size="small" icon={<UserOutlined />} className="mr-2" />
+              {user.firstName} {user.lastName}
+            </Button>
+          </Dropdown>
+        ) : (
+          <Link to="/login" className="!text-blue-100 hover:text-blue-600">
+            <Button
+              type="text"
+              icon={<UserOutlined className="!text-blue-100 !text-xl" />}
+              className="hidden md:inline-flex !text-lg !text-blue-100"
+            >
+              Login
+            </Button>
+          </Link>
+        )}
+        <Link to="/wishlist" className="!text-blue-100 hover:text-blue-600">
+          <Badge count={wishlistCount} size="small">
+            <Button
+              type="text"
+              icon={<HeartOutlined className="!text-blue-100 text-xl" />}
+              className="hidden md:inline-flex !text-lg !text-blue-100"
+            >
+              Wishlist
+            </Button>
+          </Badge>
         </Link>
         <Link to="/cart" className="!text-blue-100 hover:text-blue-600">
           <Badge count={cartCount} size="small">

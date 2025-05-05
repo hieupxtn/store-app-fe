@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { Typography, Button, Tag, Rate, Spin } from "antd";
-import { LeftOutlined, RightOutlined } from "@ant-design/icons";
+import { Typography, Button, Tag, Rate, Spin, message } from "antd";
+import {
+  LeftOutlined,
+  RightOutlined,
+  HeartOutlined,
+  HeartFilled,
+  ShoppingCartOutlined,
+} from "@ant-design/icons";
 import styles from "./NewProductsCarousel.module.css";
 import { api } from "../services/api";
 import { useNavigate } from "react-router-dom";
+import { wishlistService } from "../services/wishlistService";
+import { cartService } from "../services/cartService";
 
 interface ApiProduct {
   id: number;
@@ -44,6 +52,8 @@ const BestSeller: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [startIndex, setStartIndex] = useState(0);
+  const [wishlistItems, setWishlistItems] = useState<number[]>([]);
+  const [cartItems, setCartItems] = useState<{ [key: number]: number }>({});
   const canPrev = startIndex > 0;
   const canNext = startIndex + PRODUCTS_PER_PAGE < products.length;
   const navigate = useNavigate();
@@ -52,7 +62,6 @@ const BestSeller: React.FC = () => {
     const fetchProducts = async () => {
       try {
         const response = await api.getPopularProducts();
-        // Map the response data to match our Product interface
         const mappedProducts = response.data.map((product: ApiProduct) => ({
           id: product.id,
           name: product.productName,
@@ -67,7 +76,7 @@ const BestSeller: React.FC = () => {
               : product.productType === 3
               ? "Accessories"
               : "Tablet",
-          reviews: Math.floor(Math.random() * 100) + 1, // Adding random reviews count for demo
+          reviews: Math.floor(Math.random() * 100) + 1,
           productCode: product.productCode,
           productType: product.productType,
           quantity: product.quantity,
@@ -86,15 +95,87 @@ const BestSeller: React.FC = () => {
     fetchProducts();
   }, []);
 
+  // Listen for wishlist changes
+  useEffect(() => {
+    const updateWishlist = () => {
+      const wishlist = wishlistService.getWishlist();
+      setWishlistItems(wishlist.map((item) => item.id));
+    };
+
+    updateWishlist();
+    window.addEventListener("storage", updateWishlist);
+    return () => window.removeEventListener("storage", updateWishlist);
+  }, []);
+
+  // Listen for cart changes
+  useEffect(() => {
+    const updateCart = () => {
+      const cart = cartService.getCart();
+      const items: { [key: number]: number } = {};
+      cart.forEach((item) => {
+        items[item.id] = item.quantity;
+      });
+      setCartItems(items);
+    };
+
+    updateCart();
+    window.addEventListener("storage", updateCart);
+    return () => window.removeEventListener("storage", updateCart);
+  }, []);
+
   const handlePrev = () => {
     if (canPrev) setStartIndex(startIndex - 1);
   };
+
   const handleNext = () => {
     if (canNext) setStartIndex(startIndex + 1);
   };
 
   const handleProductClick = (productId: number) => {
     navigate(`/product/${productId}`);
+  };
+
+  const handleWishlistToggle = (e: React.MouseEvent, product: Product) => {
+    e.stopPropagation();
+    if (wishlistService.isInWishlist(product.id)) {
+      wishlistService.removeFromWishlist(product.id);
+      message.success("Removed from wishlist!");
+    } else {
+      const wishlistItem = {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        rating: product.rating,
+      };
+      wishlistService.addToWishlist(wishlistItem);
+      message.success("Added to wishlist!");
+    }
+    const updatedWishlist = wishlistService.getWishlist();
+    setWishlistItems(updatedWishlist.map((item) => item.id));
+    window.dispatchEvent(new Event("storage"));
+  };
+
+  const handleAddToCart = (e: React.MouseEvent, product: Product) => {
+    e.stopPropagation();
+    const cartItem = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+      quantity: 1,
+    };
+    cartService.addToCart(cartItem);
+    message.success("Added to cart!");
+    // Update cart items state
+    const updatedCart = cartService.getCart();
+    const items: { [key: number]: number } = {};
+    updatedCart.forEach((item) => {
+      items[item.id] = item.quantity;
+    });
+    setCartItems(items);
+    // Trigger storage event to update other components
+    window.dispatchEvent(new Event("storage"));
   };
 
   const visibleProducts =
@@ -119,7 +200,11 @@ const BestSeller: React.FC = () => {
         >
           Best Seller
         </Typography.Title>
-        <Button type="link" className="!text-gray-500 flex items-center">
+        <Button
+          type="link"
+          className="!text-gray-500 flex items-center"
+          onClick={() => navigate("/products?sort=best-seller")}
+        >
           See More <span>&rarr;</span>
         </Button>
       </div>
@@ -170,6 +255,29 @@ const BestSeller: React.FC = () => {
                     alt={p.name}
                     className="rounded-lg object-contain w-full h-[150px] bg-white"
                   />
+                  <div className="absolute top-4 right-4 flex gap-2">
+                    <div
+                      className="bg-white rounded-full p-2 shadow-lg cursor-pointer hover:bg-blue-50"
+                      onClick={(e) => handleWishlistToggle(e, p)}
+                    >
+                      {wishlistItems.includes(p.id) ? (
+                        <HeartFilled className="text-xl text-red-500" />
+                      ) : (
+                        <HeartOutlined className="text-xl text-blue-500" />
+                      )}
+                    </div>
+                    <div
+                      className="bg-white rounded-full p-2 shadow-lg cursor-pointer hover:bg-blue-50"
+                      onClick={(e) => handleAddToCart(e, p)}
+                    >
+                      <ShoppingCartOutlined className="text-xl text-blue-500" />
+                      {cartItems[p.id] > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                          {cartItems[p.id]}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                   {p.play && (
                     <span className="absolute bottom-2 right-2 bg-white rounded-full shadow p-1 cursor-pointer">
                       <svg

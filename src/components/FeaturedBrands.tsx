@@ -1,5 +1,6 @@
 import React from "react";
 import { Card, Row, Col, Typography, Button } from "antd";
+import { useNavigate } from "react-router-dom";
 
 const brands = [
   { name: "ABS", logo: "/images/brands/abs.png" },
@@ -13,13 +14,19 @@ const brands = [
 ];
 
 const FeaturedBrands: React.FC = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="mt-16 px-14">
       <div className="flex items-center mb-4">
         <Typography.Title level={3} className="!mb-0 !mr-4 !text-[#0a174e]">
           Featured Brands
         </Typography.Title>
-        <Button type="link" className="!text-gray-500 flex items-center">
+        <Button
+          type="link"
+          className="!text-gray-500 flex items-center"
+          onClick={() => navigate("/brands")}
+        >
           See More <span className="ml-1">&rarr;</span>
         </Button>
       </div>
@@ -36,6 +43,9 @@ const FeaturedBrands: React.FC = () => {
                   height: "100%",
                 },
               }}
+              onClick={() =>
+                navigate(`/products?brands=${encodeURIComponent(brand.name)}`)
+              }
             >
               <img
                 src={brand.logo}

@@ -1,0 +1,62 @@
+.laptop-page {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.filters-section {
+  position: sticky;
+  top: 20px;
+}
+
+.products-section {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom styles for the price range slider */
+.ant-slider-track {
+  background-color: #1890ff;
+}
+
+.ant-slider-handle {
+  border-color: #1890ff;
+}
+
+.ant-slider-handle:focus {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+/* Custom styles for checkboxes */
+.ant-checkbox-wrapper {
+  margin-left: 0 !important;
+}
+
+.ant-checkbox-wrapper:hover .ant-checkbox-inner {
+  border-color: #1890ff;
+}
+
+.ant-checkbox-checked .ant-checkbox-inner {
+  background-color: #1890ff;
+  border-color: #1890ff;
+}
+
+/* Custom styles for select dropdowns */
+.ant-select-selector {
+  border-radius: 4px !important;
+}
+
+.ant-select-focused .ant-select-selector {
+  border-color: #1890ff !important;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .filters-section {
+    position: static;
+    margin-bottom: 20px;
+  }
+} 

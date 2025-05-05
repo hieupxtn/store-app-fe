@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Avatar, Card, Carousel, Col, Layout, Row } from "antd";
+import { Avatar, Card, Carousel, Col, Layout, Row, Button } from "antd";
 import { Content } from "antd/es/layout/layout";
 import AppHeader from "../common/AppHeader";
 import AppFooter from "../common/AppFooter";
@@ -9,6 +9,7 @@ import FeaturedBrands from "../components/FeaturedBrands";
 import NewProducts from "../components/NewProducts";
 import BestSeller from "../components/BestSeller";
 import { api } from "../services/api";
+import { useNavigate } from "react-router-dom";
 // import CustomCarousel from "../common/BaseCarousel";
 // import ShopPage from "../components/ShopPage";
 
@@ -23,6 +24,7 @@ interface Product {
 const HomePage: React.FC = () => {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
@@ -40,12 +42,16 @@ const HomePage: React.FC = () => {
   }, []);
 
   const productTypes = [
-    { name: "PC Gaming", image: "/images/pc.png" },
-    { name: "Laptops", image: "/images/laptop.png" },
-    { name: "Smartphones", image: "/images/smartphone.png" },
-    { name: "Gear", image: "/images/gear.png" },
-    { name: "Card Gaming", image: "/images/card.png" },
+    { name: "PC Gaming", image: "/images/pc.png", type: 1 },
+    { name: "Laptops", image: "/images/laptop.png", type: 2 },
+    { name: "Smartphones", image: "/images/smartphone.png", type: 3 },
+    { name: "Gear", image: "/images/gear.png", type: 4 },
+    { name: "Card Gaming", image: "/images/card.png", type: 5 },
   ];
+
+  const handleProductTypeClick = (type: number) => {
+    navigate(`/products?type=${type}`);
+  };
 
   return (
     <Layout className="flex flex-col min-h-screen w-full">
@@ -75,7 +81,10 @@ const HomePage: React.FC = () => {
         <Row gutter={[16, 16]} className="mt-2 flex justify-center gap-5">
           {productTypes.map((type) => (
             <Col key={type.name}>
-              <Card className="p-5 min-w-[200px] !flex !flex-col !items-center !rounded-lg !transition-all !bg-transparent !border-none hover:!shadow-2xl hover:!border-gray-600 cursor-pointer hover:!bg-blue-200">
+              <Card
+                className="p-5 min-w-[200px] !flex !flex-col !items-center !rounded-lg !transition-all !bg-transparent !border-none hover:!shadow-2xl hover:!border-gray-600 cursor-pointer hover:!bg-blue-200"
+                onClick={() => handleProductTypeClick(type.type)}
+              >
                 <Row className="text-sm font-bold text-gray-800 !flex !items-center !justify-center">
                   <Avatar size={64} src={type.image} className="!shadow-sm" />
                 </Row>
@@ -88,9 +97,17 @@ const HomePage: React.FC = () => {
         </Row>
         {/* Featured Products Section */}
         <div className="mt-10">
-          <Title level={2} className="text-center mb-8 !text-[#803535]">
-            Featured Products
-          </Title>
+          <div className="flex items-center justify-center mb-8">
+            <Button
+              type="link"
+              className="!text-gray-500 flex items-center ml-4"
+              onClick={() => navigate("/products")}
+            >
+              <Title level={2} className="!text-[#803535] !mb-0">
+                Featured Products
+              </Title>
+            </Button>
+          </div>
           <ProductList products={featuredProducts} loading={loading} />
         </div>
         <BestSeller />

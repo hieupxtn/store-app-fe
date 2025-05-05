@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from "react";
-import { Layout, Table, Button, message } from "antd";
+import React, { useState, useEffect } from "react";
+import { Layout, Table, Button, message, Checkbox } from "antd";
 import { Content } from "antd/es/layout/layout";
 import AppHeader from "../common/AppHeader";
 import AppFooter from "../common/AppFooter";
 import FeaturedBrands from "../components/FeaturedBrands";
+import { useNavigate } from "react-router-dom";
+import { cartService } from "../services/cartService";
 
 interface CartItem {
   id: number;
@@ -12,52 +14,67 @@ interface CartItem {
   price: number;
   quantity: number;
   image: string;
+  selected?: boolean;
 }
 
-const initialCart: CartItem[] = [
-  {
-    id: 1,
-    name: "Laptop Gaming",
-    price: 1200,
-    quantity: 1,
-    image: "https://via.placeholder.com/80",
-  },
-  {
-    id: 2,
-    name: "Smartphone",
-    price: 800,
-    quantity: 2,
-    image: "https://via.placeholder.com/80",
-  },
-  {
-    id: 3,
-    name: "Wireless Headphone",
-    price: 150,
-    quantity: 1,
-    image: "https://via.placeholder.com/80",
-  },
-];
-
 const CartPage: React.FC = () => {
-  const [cart, setCart] = useState<CartItem[]>(initialCart);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const savedCart = cartService.getCart();
+    // Initialize all items as selected by default
+    const cartWithSelection = savedCart.map((item) => ({
+      ...item,
+      selected: true,
+    }));
+    setCart(cartWithSelection);
+  }, []);
 
   const updateQuantity = (id: number, quantity: number) => {
-    setCart((prevCart) =>
-      prevCart.map((item) => (item.id === id ? { ...item, quantity } : item))
+    const updatedCart = cart.map((item) =>
+      item.id === id ? { ...item, quantity } : item
     );
+    setCart(updatedCart);
+    cartService.updateCartItem(id, quantity);
   };
 
   const removeItem = (id: number) => {
-    setCart((prevCart) => prevCart.filter((item) => item.id !== id));
+    const updatedCart = cart.filter((item) => item.id !== id);
+    setCart(updatedCart);
+    cartService.removeFromCart(id);
     message.success("Removed item from cart!");
   };
 
-  const totalPrice = cart.reduce(
+  const toggleSelectItem = (id: number) => {
+    const updatedCart = cart.map((item) =>
+      item.id === id ? { ...item, selected: !item.selected } : item
+    );
+    setCart(updatedCart);
+  };
+
+  const selectAllItems = (checked: boolean) => {
+    const updatedCart = cart.map((item) => ({ ...item, selected: checked }));
+    setCart(updatedCart);
+  };
+
+  const selectedItems = cart.filter((item) => item.selected);
+  const totalPrice = selectedItems.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0
   );
 
   const columns = [
+    {
+      title: "Select",
+      key: "select",
+      render: (_: any, record: CartItem) => (
+        <Checkbox
+          checked={record.selected}
+          onChange={() => toggleSelectItem(record.id)}
+        />
+      ),
+    },
     {
       title: "Product",
       dataIndex: "name",
@@ -119,6 +136,14 @@ const CartPage: React.FC = () => {
 
           {cart.length > 0 ? (
             <>
+              <div className="mb-4">
+                <Checkbox
+                  onChange={(e) => selectAllItems(e.target.checked)}
+                  checked={cart.every((item) => item.selected)}
+                >
+                  Select All Items
+                </Checkbox>
+              </div>
               <Table
                 dataSource={cart}
                 columns={columns}
@@ -128,12 +153,21 @@ const CartPage: React.FC = () => {
 
               <div className="flex justify-between items-center mt-6">
                 <h3 className="text-xl font-semibold">
-                  Total: ${totalPrice.toFixed(2)}
+                  Total ({selectedItems.length} items): ${totalPrice.toFixed(2)}
                 </h3>
                 <Button
                   type="primary"
                   size="large"
                   className="bg-blue-500 hover:bg-blue-600"
+                  onClick={() => {
+                    if (selectedItems.length === 0) {
+                      message.warning(
+                        "Please select at least one item to checkout"
+                      );
+                      return;
+                    }
+                    navigate("/payment", { state: { selectedItems } });
+                  }}
                 >
                   Checkout
                 </Button>

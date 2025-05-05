@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-  Row,
-  Col,
   Typography,
   Button,
   InputNumber,
@@ -10,14 +8,18 @@ import {
   Tabs,
   Spin,
   message,
+  Layout,
 } from "antd";
 import {
   ShoppingCartOutlined,
   HeartOutlined,
+  HeartFilled,
   ShareAltOutlined,
 } from "@ant-design/icons";
 import { useParams } from "react-router-dom";
 import { api } from "../services/api";
+import { cartService } from "../services/cartService";
+import { wishlistService } from "../services/wishlistService";
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
@@ -41,28 +43,58 @@ interface ProductDetailProps {
 
 const ProductDetail: React.FC<ProductDetailProps> = () => {
   const [quantity, setQuantity] = useState(1);
+  const [isInWishlist, setIsInWishlist] = useState(false);
+  const { id } = useParams<{ id: string }>();
   const [product, setProduct] = useState<ProductDetailProps["product"]>();
   const [loading, setLoading] = useState(true);
-  const { id } = useParams<{ id: string }>();
 
   useEffect(() => {
-    const fetchProductDetail = async () => {
+    const fetchProduct = async () => {
       try {
-        setLoading(true);
         const response = await api.getProductById(Number(id));
         setProduct(response.data);
+        setIsInWishlist(wishlistService.isInWishlist(response.data.id));
       } catch (error) {
-        message.error("Failed to fetch product details");
         console.error("Error fetching product:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    if (id) {
-      fetchProductDetail();
-    }
+    fetchProduct();
   }, [id]);
+
+  const handleAddToCart = () => {
+    if (!product) return;
+    const cartItem = {
+      id: product.id,
+      name: product.productName,
+      price: product.price,
+      quantity: quantity,
+      image: product.image,
+    };
+    cartService.addToCart(cartItem);
+    message.success(`${product.productName} added to cart!`);
+  };
+
+  const handleWishlistToggle = () => {
+    if (!product) return;
+    if (isInWishlist) {
+      wishlistService.removeFromWishlist(product.id);
+      message.success("Removed from wishlist!");
+    } else {
+      const wishlistItem = {
+        id: product.id,
+        name: product.productName,
+        price: product.price,
+        image: product.image,
+        rating: product.rating,
+      };
+      wishlistService.addToWishlist(wishlistItem);
+      message.success("Added to wishlist!");
+    }
+    setIsInWishlist(!isInWishlist);
+  };
 
   if (loading) {
     return (
@@ -81,23 +113,16 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <Row gutter={[32, 32]}>
-        {/* Product Image */}
-        <Col xs={24} md={12}>
-          <div className="sticky top-8">
-            <div className="mb-4 rounded-lg overflow-hidden">
-              <img
-                src={product.image}
-                alt={product.productName}
-                className="w-full h-[500px] object-cover"
-              />
-            </div>
+    <Layout className="min-h-screen">
+      <div className="max-w-6xl mx-auto p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="flex justify-center">
+            <img
+              src={product.image}
+              alt={product.productName}
+              className="max-w-full h-auto rounded-lg shadow-lg"
+            />
           </div>
-        </Col>
-
-        {/* Product Information */}
-        <Col xs={24} md={12}>
           <div className="space-y-6">
             <div>
               <Title level={2}>{product.productName}</Title>
@@ -138,13 +163,15 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                   size="large"
                   icon={<ShoppingCartOutlined />}
                   className="flex-1"
+                  onClick={handleAddToCart}
                 >
                   Add to Cart
                 </Button>
                 <Button
                   size="large"
-                  icon={<HeartOutlined />}
+                  icon={isInWishlist ? <HeartFilled /> : <HeartOutlined />}
                   className="flex-1"
+                  onClick={handleWishlistToggle}
                 >
                   Wishlist
                 </Button>
@@ -187,9 +214,9 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
               </TabPane>
             </Tabs>
           </div>
-        </Col>
-      </Row>
-    </div>
+        </div>
+      </div>
+    </Layout>
   );
 };
 

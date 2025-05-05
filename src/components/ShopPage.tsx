@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Drawer, Badge, Button, Row } from "antd";
 import { ShoppingCartOutlined } from "@ant-design/icons";
 import ProductCard from "../components/ProductCard";
 import FilterBar from "../components/FilterBar";
+import { cartService } from "../services/cartService";
 
 const products = [
   {
@@ -42,9 +43,17 @@ const ShopPage: React.FC = () => {
   const [search, setSearch] = useState("");
   const [cartOpen, setCartOpen] = useState(false);
 
-  const addToCart = (id: number) => {
-    setCart([...cart, id]);
+  const updateCartCount = () => {
+    const cartItems = cartService.getCart();
+    setCart(cartItems.map((item) => item.id));
   };
+
+  useEffect(() => {
+    updateCartCount();
+    // Listen for storage changes to update cart count
+    window.addEventListener("storage", updateCartCount);
+    return () => window.removeEventListener("storage", updateCartCount);
+  }, []);
 
   const filteredProducts = products.filter((product) => {
     return (
@@ -67,11 +76,7 @@ const ShopPage: React.FC = () => {
         </Row>
         <Row className="flex justify-around w-full">
           {filteredProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              addToCart={addToCart}
-            />
+            <ProductCard key={product.id} product={product} />
           ))}
         </Row>
       </Row>
