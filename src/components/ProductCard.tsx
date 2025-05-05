@@ -83,9 +83,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <Button
           type={isInWishlist ? "primary" : "default"}
           danger={isInWishlist}
-          icon={isInWishlist ? <HeartFilled /> : <HeartOutlined />}
+          icon={
+            isInWishlist ? (
+              <HeartFilled className="!text-red-500" />
+            ) : (
+              <HeartOutlined className="text-red-500" />
+            )
+          }
           onClick={handleWishlistToggle}
-        />
+        >
+          {isInWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
+        </Button>
       </div>
     </Card>
   );

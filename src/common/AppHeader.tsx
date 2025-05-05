@@ -134,7 +134,7 @@ const AppHeader: React.FC = () => {
           <Badge count={wishlistCount} size="small">
             <Button
               type="text"
-              icon={<HeartOutlined className="!text-blue-100 text-xl" />}
+              icon={<HeartOutlined className="!text-red-500 text-xl" />}
               className="hidden md:inline-flex !text-lg !text-blue-100"
             >
               Wishlist

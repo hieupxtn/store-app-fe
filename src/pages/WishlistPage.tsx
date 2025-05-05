@@ -106,7 +106,7 @@ const WishlistPage: React.FC = () => {
                         </Button>
                         <Button
                           danger
-                          icon={<HeartOutlined />}
+                          icon={<HeartOutlined className="text-red-500" />}
                           onClick={() => handleRemoveFromWishlist(item.id)}
                           className="w-[100px]"
                         >
@@ -120,7 +120,7 @@ const WishlistPage: React.FC = () => {
             </Row>
           ) : (
             <div className="text-center py-12">
-              <HeartOutlined className="text-6xl text-gray-300 mb-4" />
+              <HeartOutlined className="text-6xl text-red-500 mb-4" />
               <Title level={3} className="text-gray-500">
                 Your wishlist is empty
               </Title>

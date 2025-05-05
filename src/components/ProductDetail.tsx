@@ -178,7 +178,13 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                 </Button>
                 <Button
                   size="large"
-                  icon={isInWishlist ? <HeartFilled /> : <HeartOutlined />}
+                  icon={
+                    isInWishlist ? (
+                      <HeartFilled className="!text-red-500" />
+                    ) : (
+                      <HeartOutlined className="text-red-500" />
+                    )
+                  }
                   className="flex-1"
                   onClick={handleWishlistToggle}
                 >

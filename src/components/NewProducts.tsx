@@ -263,9 +263,9 @@ const NewProducts: React.FC = () => {
                       onClick={(e) => handleWishlistToggle(e, p)}
                     >
                       {wishlistItems.includes(p.id) ? (
-                        <HeartFilled className="text-xl text-red-500" />
+                        <HeartFilled className="text-xl !text-red-500" />
                       ) : (
-                        <HeartOutlined className="text-xl text-blue-500" />
+                        <HeartOutlined className="text-xl text-red-500" />
                       )}
                     </div>
                     <div
@@ -294,7 +294,7 @@ const NewProducts: React.FC = () => {
                     </span>
                   )}
                 </div>
-                <div className="mt-2 font-semibold text-base line-clamp-2 min-h-[20px]">
+                <div className="mt-2 font-semibold text-base line-clamp-2 min-h-[50px]">
                   {p.name}
                 </div>
                 {p.rating && (

@@ -14,7 +14,7 @@ const { Title, Text } = Typography;
 
 interface Product {
   id: number;
-  name: string;
+  productName: string;
   price: number;
   image: string;
   description: string;
@@ -75,7 +75,7 @@ const ProductList: React.FC<ProductListProps> = ({
     e.stopPropagation();
     const cartItem = {
       id: product.id,
-      name: product.name,
+      name: product.productName,
       price: product.price,
       image: product.image,
       quantity: 1,
@@ -101,7 +101,7 @@ const ProductList: React.FC<ProductListProps> = ({
     } else {
       const wishlistItem = {
         id: product.id,
-        name: product.name,
+        name: product.productName,
         price: product.price,
         image: product.image,
         rating: product.rating,
@@ -121,7 +121,7 @@ const ProductList: React.FC<ProductListProps> = ({
       </div>
     );
   }
-
+  console.log("products", products);
   return (
     <Row gutter={[24, 24]} className="px-14 py-6">
       {products.map((product) => (
@@ -133,7 +133,7 @@ const ProductList: React.FC<ProductListProps> = ({
             cover={
               <div className="relative overflow-hidden" style={{ height: 250 }}>
                 <img
-                  alt={product.name}
+                  alt={product.productName}
                   src={product.image}
                   className="w-full h-full object-contain p-4 transition-transform duration-300 hover:scale-110"
                 />
@@ -143,9 +143,9 @@ const ProductList: React.FC<ProductListProps> = ({
                     onClick={(e) => handleWishlistToggle(e, product)}
                   >
                     {wishlistItems.includes(product.id) ? (
-                      <HeartFilled className="text-xl text-red-500" />
+                      <HeartFilled className="text-xl !text-red-500" />
                     ) : (
-                      <HeartOutlined className="text-xl text-blue-500" />
+                      <HeartOutlined className="text-xl text-red-500" />
                     )}
                   </div>
                   <div
@@ -166,7 +166,7 @@ const ProductList: React.FC<ProductListProps> = ({
             <Meta
               title={
                 <Title level={4} className="mb-2 line-clamp-2 min-h-[48px]">
-                  {product.name}
+                  {product.productName}
                 </Title>
               }
               description={

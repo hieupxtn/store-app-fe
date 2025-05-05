@@ -200,7 +200,13 @@ const ProductDetailPage: React.FC = () => {
                   Add to Cart
                 </Button>
                 <Button
-                  icon={isInWishlist ? <HeartFilled /> : <HeartOutlined />}
+                  icon={
+                    isInWishlist ? (
+                      <HeartFilled className="!text-red-500" />
+                    ) : (
+                      <HeartOutlined className="text-red-500" />
+                    )
+                  }
                   size="large"
                   onClick={handleWishlistToggle}
                 >

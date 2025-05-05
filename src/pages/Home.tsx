@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 
 interface Product {
   id: number;
-  name: string;
+  productName: string;
   price: number;
   image: string;
   description: string;
