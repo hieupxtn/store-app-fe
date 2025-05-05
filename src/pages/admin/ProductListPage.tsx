@@ -17,8 +17,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import {
   api,
-  AdminProduct,
-  Pagination,
+  Product,
   UpdateProductRequest,
   CreateProductRequest,
 } from "../../services/api";
@@ -29,17 +28,9 @@ const { Content } = Layout;
 const { TextArea } = Input;
 
 const ProductListPage: React.FC = () => {
-  const [products, setProducts] = useState<AdminProduct[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState<Pagination>({
-    total: 0,
-    page: 1,
-    limit: 10,
-    totalPages: 1,
-  });
-  const [selectedProduct, setSelectedProduct] = useState<AdminProduct | null>(
-    null
-  );
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isViewModalVisible, setIsViewModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
@@ -52,14 +43,8 @@ const ProductListPage: React.FC = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await api.getAdminProducts();
-        if (response.errCode === 0 && response.data) {
-          setProducts(response.data.products);
-          setPagination(response.data.pagination);
-        } else {
-          message.error(response.message || "Failed to fetch products");
-          setProducts([]);
-        }
+        const response = await api.getAllProducts();
+        setProducts(response.products);
       } catch (error) {
         console.error("Error fetching products:", error);
         message.error("Failed to fetch products. Please try again later.");
@@ -130,7 +115,7 @@ const ProductListPage: React.FC = () => {
       title: "Price",
       dataIndex: "price",
       key: "price",
-      render: (price: number) => `$${price.toLocaleString()}`,
+      render: (price: number) => `$${price ? price.toLocaleString() : 0}`,
     },
     {
       title: "Quantity",
@@ -139,11 +124,6 @@ const ProductListPage: React.FC = () => {
       render: (quantity: number) => (
         <span className={quantity <= 0 ? "text-red-500" : ""}>{quantity}</span>
       ),
-    },
-    {
-      title: "Limit",
-      dataIndex: "quantityLimit",
-      key: "quantityLimit",
     },
     {
       title: "Rating",
@@ -163,12 +143,13 @@ const ProductListPage: React.FC = () => {
       title: "Created At",
       dataIndex: "createdAt",
       key: "createdAt",
-      render: (date: string) => new Date(date).toLocaleString(),
+      render: (date: string | null) =>
+        date ? new Date(date).toLocaleString() : "Not specified",
     },
     {
       title: "Actions",
       key: "actions",
-      render: (_: unknown, record: AdminProduct) => (
+      render: (_: unknown, record: Product) => (
         <Space>
           <Button type="link" onClick={() => handleViewProduct(record.id)}>
             View
@@ -191,12 +172,12 @@ const ProductListPage: React.FC = () => {
   const handleViewProduct = async (productId: number) => {
     try {
       setLoading(true);
-      const response = await api.getAdminProductById(productId);
-      if (response.errCode === 0) {
-        setSelectedProduct(response.data);
+      const product = products.find((p) => p.id === productId);
+      if (product) {
+        setSelectedProduct(product);
         setIsViewModalVisible(true);
       } else {
-        message.error(response.message || "Failed to fetch product details");
+        message.error("Product not found");
       }
     } catch (error) {
       console.error("Error fetching product:", error);
@@ -209,21 +190,21 @@ const ProductListPage: React.FC = () => {
   const handleEditProduct = async (productId: number) => {
     try {
       setLoading(true);
-      const response = await api.getAdminProductById(productId);
-      if (response.errCode === 0) {
-        setSelectedProduct(response.data);
+      const product = products.find((p) => p.id === productId);
+      if (product) {
+        setSelectedProduct(product);
         form.setFieldsValue({
-          productName: response.data.productName,
-          productType: response.data.productType,
-          price: response.data.price,
-          quantity: response.data.quantity,
-          quantityLimit: response.data.quantityLimit,
-          description: response.data.description,
-          image: response.data.image,
+          productName: product.productName,
+          productType: product.productType,
+          price: product.price,
+          quantity: product.quantity,
+          quantityLimit: product.quantityLimit,
+          description: product.description,
+          image: product.image,
         });
         setIsEditModalVisible(true);
       } else {
-        message.error(response.message || "Failed to fetch product details");
+        message.error("Product not found");
       }
     } catch (error) {
       console.error("Error fetching product:", error);
@@ -243,18 +224,11 @@ const ProductListPage: React.FC = () => {
 
     try {
       setLoading(true);
-      const response = await api.deleteAdminProduct(productToDelete);
-      if (response.errCode === 0) {
-        message.success("Product deleted successfully");
-        // Refresh the product list
-        const productsResponse = await api.getAdminProducts();
-        if (productsResponse.errCode === 0 && productsResponse.data) {
-          setProducts(productsResponse.data.products);
-          setPagination(productsResponse.data.pagination);
-        }
-      } else {
-        message.error(response.message || "Failed to delete product");
-      }
+      await api.deleteProduct(productToDelete);
+      message.success("Product deleted successfully");
+      // Refresh the product list
+      const response = await api.getAllProducts();
+      setProducts(response.products);
     } catch (error) {
       console.error("Error deleting product:", error);
       message.error("Failed to delete product. Please try again later.");
@@ -270,22 +244,15 @@ const ProductListPage: React.FC = () => {
 
     try {
       setLoading(true);
-      const response = await api.updateAdminProduct(selectedProduct.id, values);
-      if (response.errCode === 0) {
-        message.success("Product updated successfully");
-        setIsEditModalVisible(false);
-        // Refresh the product list
-        const productsResponse = await api.getAdminProducts();
-        if (productsResponse.errCode === 0 && productsResponse.data) {
-          setProducts(productsResponse.data.products);
-          setPagination(productsResponse.data.pagination);
-        }
-      } else {
-        message.error(response.message || "Failed to update product");
-      }
+      await api.updateProduct(selectedProduct.id, values);
+      message.success("Product updated successfully");
+      setIsEditModalVisible(false);
+      // Refresh the product list
+      const productsResponse = await api.getAllProducts();
+      setProducts(productsResponse.products);
     } catch (error) {
       console.error("Error updating product:", error);
-      message.error("Failed to update product");
+      message.error("Failed to update product. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -294,23 +261,16 @@ const ProductListPage: React.FC = () => {
   const handleCreateProduct = async (values: CreateProductRequest) => {
     try {
       setLoading(true);
-      const response = await api.createAdminProduct(values);
-      if (response.errCode === 0) {
-        message.success("Product created successfully");
-        setIsCreateModalVisible(false);
-        createForm.resetFields();
-        // Refresh the product list
-        const productsResponse = await api.getAdminProducts();
-        if (productsResponse.errCode === 0 && productsResponse.data) {
-          setProducts(productsResponse.data.products);
-          setPagination(productsResponse.data.pagination);
-        }
-      } else {
-        message.error(response.message || "Failed to create product");
-      }
+      await api.createProduct(values);
+      message.success("Product created successfully");
+      setIsCreateModalVisible(false);
+      createForm.resetFields();
+      // Refresh the product list
+      const productsResponse = await api.getAllProducts();
+      setProducts(productsResponse.products);
     } catch (error) {
       console.error("Error creating product:", error);
-      message.error("Failed to create product");
+      message.error("Failed to create product. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -344,9 +304,9 @@ const ProductListPage: React.FC = () => {
               loading={loading}
               scroll={{ x: 1500 }}
               pagination={{
-                current: pagination.page,
-                pageSize: pagination.limit,
-                total: pagination.total,
+                current: 1,
+                pageSize: 10,
+                total: products.length,
                 showSizeChanger: true,
                 showQuickJumper: true,
                 showTotal: (total) => `Total ${total} items`,

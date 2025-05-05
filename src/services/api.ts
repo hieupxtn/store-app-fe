@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axiosInstance from '../config/axios';
 
 interface LoginResponse {
@@ -21,20 +22,6 @@ interface RegisterResponse {
     id: number;
     email: string;
     password: string;
-    firstName: string;
-    lastName: string;
-    address: string;
-    gender: boolean;
-    role: string;
-    updatedAt: string;
-    createdAt: string;
-  };
-}
-
-interface UpdateUserResponse {
-  user: {
-    id: number;
-    email: string;
     firstName: string;
     lastName: string;
     address: string;
@@ -160,6 +147,8 @@ export interface DashboardData {
   totalOrders: number;
   totalRevenue: number;
   totalProducts: number;
+  totalReviews: number;
+  totalProductTypes: number;
   recentOrders: DashboardOrder[];
 }
 
@@ -168,6 +157,115 @@ export interface DashboardResponse {
   message: string;
   data: DashboardData;
 }
+
+export interface User {
+  id: number;
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  address: string | null;
+  gender: boolean | null;
+  role: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UsersResponse {
+  users: User[];
+}
+
+export interface UpdateUserRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
+  gender: boolean | null;
+  address: string | null;
+}
+
+export interface DeleteUserResponse {
+  message: string;
+}
+
+export interface Product {
+  id: number;
+  productCode: string;
+  productName: string;
+  productType: number;
+  price: number;
+  quantity: number;
+  quantityLimit: number;
+  rating: number;
+  description: string;
+  image: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProductsResponse {
+  products: Product[];
+}
+
+export interface ProductResponse {
+  product: Product;
+}
+
+export interface OrderItem {
+  id: number;
+  orderId: number;
+  productId: number;
+  quantity: number;
+  price: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Order {
+  id: number;
+  userId: number;
+  totalPrice: number;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  OrderItems: OrderItem[];
+}
+
+export interface OrdersResponse {
+  orders: Order[];
+}
+
+export interface OrderResponse {
+  order: Order;
+}
+
+export interface ProductType {
+  id: number;
+  name: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProductTypeResponse {
+  types: ProductType[];
+}
+
+export interface SingleProductTypeResponse {
+  type: ProductType;
+}
+
+export interface Brand {
+  id: number;
+  name: string;
+  description: string;
+  logo: string;
+  createdAt: string;
+  updatedAt: string;
+  products: any[];
+}
+
+export type BrandsResponse = Brand[];
 
 // Example API endpoints
 export const api = {
@@ -197,12 +295,14 @@ export const api = {
     return response.data;
   },
 
-  updateUser: async (userId: number, data: {
-    firstName: string;
-    lastName: string;
-  }) => {
-    const response = await axiosInstance.put<UpdateUserResponse>(`/api/users/${userId}`, data);
-    return response.data;
+  updateUser: async (userId: number, data: UpdateUserRequest): Promise<{ user: User }> => {
+    try {
+      const response = await axiosInstance.put(`/api/users/${userId}`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating user:', error);
+      throw error;
+    }
   },
   
   // Product endpoints
@@ -334,7 +434,7 @@ export const api = {
     }
   },
 
-  getDashboardData: async (): Promise<DashboardResponse> => {
+  getDashboardData: async (): Promise<DashboardData> => {
     try {
       const response = await axiosInstance.get('/api/admin/dashboard-statistics');
       return response.data;
@@ -344,9 +444,14 @@ export const api = {
     }
   },
 
-  getAllProducts: async () => {
-    const response = await axiosInstance.get('/api/products');
-    return response.data;
+  getAllProducts: async (): Promise<ProductsResponse> => {
+    try {
+      const response = await axiosInstance.get('/api/products');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      throw error;
+    }
   },
 
   // Best sellers endpoint
@@ -357,4 +462,125 @@ export const api = {
         console.error('Get best sellers error:', error);
         throw error;
       }),
+
+  getAllUsers: async (): Promise<UsersResponse> => {
+    try {
+      const response = await axiosInstance.get('/api/users');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      throw error;
+    }
+  },
+
+  deleteUser: async (userId: number): Promise<DeleteUserResponse> => {
+    try {
+      const response = await axiosInstance.delete(`/api/users/${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      throw error;
+    }
+  },
+
+  updateProduct: async (productId: number, data: UpdateProductRequest): Promise<ProductResponse> => {
+    try {
+      const response = await axiosInstance.put(`/api/products/${productId}`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating product:', error);
+      throw error;
+    }
+  },
+
+  deleteProduct: async (productId: number): Promise<DeleteProductResponse> => {
+    try {
+      const response = await axiosInstance.delete(`/api/products/${productId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      throw error;
+    }
+  },
+
+  createProduct: async (data: CreateProductRequest): Promise<ProductResponse> => {
+    try {
+      const response = await axiosInstance.post('/api/products', data);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating product:', error);
+      throw error;
+    }
+  },
+
+  getAllOrders: async (): Promise<OrdersResponse> => {
+    try {
+      const response = await axiosInstance.get('/api/orders');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      throw error;
+    }
+  },
+
+  getOrderById: async (id: number): Promise<OrderResponse> => {
+    try {
+      const response = await axiosInstance.get(`/api/orders/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching order:', error);
+      throw error;
+    }
+  },
+
+  // Product Type APIs
+  getAllProductTypes: async (): Promise<ProductTypeResponse> => {
+    try {
+      const response = await axiosInstance.get('/api/product-types');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching product types:', error);
+      throw error;
+    }
+  },
+
+  createProductType: async (data: { name: string; description?: string }): Promise<SingleProductTypeResponse> => {
+    try {
+      const response = await axiosInstance.post('/api/product-types', data);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating product type:', error);
+      throw error;
+    }
+  },
+
+  updateProductType: async (id: number, data: { name: string; description?: string }): Promise<SingleProductTypeResponse> => {
+    try {
+      const response = await axiosInstance.put(`/api/product-types/${id}`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating product type:', error);
+      throw error;
+    }
+  },
+
+  deleteProductType: async (id: number): Promise<void> => {
+    try {
+      await axiosInstance.delete(`/api/product-types/${id}`);
+    } catch (error) {
+      console.error('Error deleting product type:', error);
+      throw error;
+    }
+  },
+
+  // Brands endpoint
+  getBrands: async (): Promise<BrandsResponse> => {
+    try {
+      const response = await axiosInstance.get('/api/brands');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching brands:', error);
+      throw error;
+    }
+  },
 }; 

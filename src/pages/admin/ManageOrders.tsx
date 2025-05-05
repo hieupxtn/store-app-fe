@@ -1,32 +1,41 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useState, useCallback } from "react";
 import {
   Layout,
-  Card,
-  Row,
-  Col,
-  Statistic,
   Table,
   Button,
   message,
   Tag,
   Spin,
-  Alert,
   Modal,
   Descriptions,
+  Input,
+  Select,
+  Space,
+  DatePicker,
+  Card,
+  Row,
+  Col,
+  Alert,
 } from "antd";
 import {
-  UserOutlined,
-  ShoppingCartOutlined,
-  DollarOutlined,
-  ProductOutlined,
+  SearchOutlined,
+  FilterOutlined,
+  ReloadOutlined,
+  ArrowLeftOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { api, DashboardData, Order, OrderItem } from "../../services/api";
+import { api, Order, OrderItem } from "../../services/api";
 import AppHeader from "../../common/AppHeader";
 import AppFooter from "../../common/AppFooter";
+import dayjs from "dayjs";
+import isBetween from "dayjs/plugin/isBetween";
+import type { ColumnsType } from "antd/es/table";
+
+// Extend dayjs with isBetween plugin
+dayjs.extend(isBetween);
 
 const { Content } = Layout;
+const { RangePicker } = DatePicker;
 
 interface UserData {
   id: number;
@@ -37,17 +46,19 @@ interface UserData {
   keyRole: string;
 }
 
-const AdminDashboard: React.FC = () => {
+const ManageOrders: React.FC = () => {
   const [user, setUser] = useState<UserData | null>(null);
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
-    null
-  );
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderModalVisible, setOrderModalVisible] = useState(false);
   const [orderLoading, setOrderLoading] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(
+    null
+  );
   const navigate = useNavigate();
 
   // Check admin access
@@ -57,14 +68,14 @@ const AdminDashboard: React.FC = () => {
       try {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
-        // Chuẩn hóa: kiểm tra quyền dựa trên role, typeRole hoặc keyRole
         const role =
           parsedUser.role || parsedUser.typeRole || parsedUser.keyRole;
         if (role !== "admin") {
           message.error("You don't have permission to access this page");
           navigate("/");
         }
-      } catch (error) {
+      } catch (err) {
+        console.error("Error parsing user data:", err);
         message.error("Error loading user data");
         navigate("/login");
       }
@@ -74,18 +85,15 @@ const AdminDashboard: React.FC = () => {
     }
   }, [navigate]);
 
-  // Fetch dashboard data and orders
-  const fetchData = useCallback(async () => {
+  // Fetch orders
+  const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
-      const [dashboardResponse, ordersResponse] = await Promise.all([
-        api.getDashboardData(),
-        api.getAllOrders(),
-      ]);
-      setDashboardData(dashboardResponse);
-      setOrders(ordersResponse.orders);
-    } catch (error) {
-      setError("Failed to fetch data. Please try again later.");
+      const response = await api.getAllOrders();
+      setOrders(response.orders);
+    } catch (err) {
+      console.error("Error fetching orders:", err);
+      setError("Failed to fetch orders. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -93,8 +101,8 @@ const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     checkAdminAccess();
-    fetchData();
-  }, [checkAdminAccess, fetchData]);
+    fetchOrders();
+  }, [checkAdminAccess, fetchOrders]);
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -117,7 +125,8 @@ const AdminDashboard: React.FC = () => {
       const response = await api.getOrderById(orderId);
       setSelectedOrder(response.order);
       setOrderModalVisible(true);
-    } catch (error) {
+    } catch (err) {
+      console.error("Error fetching order details:", err);
       message.error("Failed to fetch order details");
     } finally {
       setOrderLoading(false);
@@ -129,22 +138,59 @@ const AdminDashboard: React.FC = () => {
     setSelectedOrder(null);
   }, []);
 
-  const orderColumns = [
+  const handleSearch = useCallback(() => {
+    // Filter orders based on search criteria
+    const filteredOrders = orders.filter((order) => {
+      const matchesSearch = searchText
+        ? order.id.toString().includes(searchText) ||
+          order.userId.toString().includes(searchText)
+        : true;
+
+      const matchesStatus = statusFilter
+        ? order.status.toLowerCase() === statusFilter.toLowerCase()
+        : true;
+
+      const matchesDateRange = dateRange
+        ? dayjs(order.createdAt).isBetween(
+            dateRange[0],
+            dateRange[1],
+            "day",
+            "[]"
+          )
+        : true;
+
+      return matchesSearch && matchesStatus && matchesDateRange;
+    });
+
+    setOrders(filteredOrders);
+  }, [orders, searchText, statusFilter, dateRange]);
+
+  const handleReset = useCallback(() => {
+    setSearchText("");
+    setStatusFilter(null);
+    setDateRange(null);
+    fetchOrders();
+  }, [fetchOrders]);
+
+  const columns: ColumnsType<Order> = [
     {
       title: "Order ID",
       dataIndex: "id",
       key: "id",
+      sorter: (a, b) => a.id - b.id,
     },
     {
       title: "User ID",
       dataIndex: "userId",
       key: "userId",
+      sorter: (a, b) => a.userId - b.userId,
     },
     {
       title: "Total Price",
       dataIndex: "totalPrice",
       key: "totalPrice",
       render: (price: number) => `$${price.toFixed(2)}`,
+      sorter: (a, b) => a.totalPrice - b.totalPrice,
     },
     {
       title: "Status",
@@ -155,31 +201,27 @@ const AdminDashboard: React.FC = () => {
           {status.charAt(0).toUpperCase() + status.slice(1)}
         </Tag>
       ),
+      filters: [
+        { text: "Completed", value: "completed" },
+        { text: "Pending", value: "pending" },
+        { text: "Processing", value: "processing" },
+        { text: "Cancelled", value: "cancelled" },
+      ],
+      onFilter: (value, record) =>
+        record.status.toLowerCase() === String(value).toLowerCase(),
     },
     {
       title: "Created At",
       dataIndex: "createdAt",
       key: "createdAt",
       render: (date: string) => new Date(date).toLocaleString(),
-    },
-    {
-      title: "Items",
-      key: "items",
-      render: (record: Order) => (
-        <div>
-          {record.OrderItems.map((item: OrderItem) => (
-            <div key={item.id}>
-              Product ID: {item.productId} - Qty: {item.quantity} - $
-              {item.price}
-            </div>
-          ))}
-        </div>
-      ),
+      sorter: (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
     },
     {
       title: "Actions",
       key: "actions",
-      render: (_: unknown, record: Order) => (
+      render: (_, record) => (
         <Button type="link" onClick={() => handleViewOrder(record.id)}>
           View Details
         </Button>
@@ -196,11 +238,71 @@ const AdminDashboard: React.FC = () => {
       <AppHeader />
       <Content className="flex-grow bg-gray-100">
         <div className="w-full px-4 py-8 min-h-[751px] max-w-7xl mx-auto">
-          <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl font-bold">Manage Orders</h1>
+            <Button
+              type="default"
+              icon={<ArrowLeftOutlined />}
+              onClick={() => navigate("/admin")}
+            >
+              Back to Dashboard
+            </Button>
+          </div>
+
+          {/* Filters */}
+          <Card className="mb-6">
+            <Row gutter={[16, 16]}>
+              <Col xs={24} sm={12} md={6}>
+                <Input
+                  placeholder="Search by Order ID or User ID"
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  prefix={<SearchOutlined />}
+                />
+              </Col>
+              <Col xs={24} sm={12} md={6}>
+                <Select
+                  placeholder="Filter by Status"
+                  style={{ width: "100%" }}
+                  value={statusFilter}
+                  onChange={setStatusFilter}
+                  allowClear
+                >
+                  <Select.Option value="completed">Completed</Select.Option>
+                  <Select.Option value="pending">Pending</Select.Option>
+                  <Select.Option value="processing">Processing</Select.Option>
+                  <Select.Option value="cancelled">Cancelled</Select.Option>
+                </Select>
+              </Col>
+              <Col xs={24} sm={12} md={6}>
+                <RangePicker
+                  style={{ width: "100%" }}
+                  value={dateRange}
+                  onChange={(dates) =>
+                    setDateRange(dates as [dayjs.Dayjs, dayjs.Dayjs])
+                  }
+                />
+              </Col>
+              <Col xs={24} sm={12} md={6}>
+                <Space>
+                  <Button
+                    type="primary"
+                    icon={<FilterOutlined />}
+                    onClick={handleSearch}
+                  >
+                    Apply Filters
+                  </Button>
+                  <Button icon={<ReloadOutlined />} onClick={handleReset}>
+                    Reset
+                  </Button>
+                </Space>
+              </Col>
+            </Row>
+          </Card>
 
           {/* Loading Spinner */}
           {loading && (
-            <Spin size="large" tip="Loading dashboard...">
+            <Spin size="large" tip="Loading orders...">
               <div style={{ minHeight: 400 }} />
             </Spin>
           )}
@@ -216,128 +318,15 @@ const AdminDashboard: React.FC = () => {
             />
           )}
 
-          {/* Statistics Cards */}
-          {!loading && !error && (
-            <>
-              <Row gutter={[24, 24]} className="mb-4">
-                <Col xs={24} sm={12} md={8}>
-                  <Card>
-                    <Statistic
-                      title="Total Users"
-                      value={dashboardData?.totalUsers || 0}
-                      prefix={<UserOutlined />}
-                      valueStyle={{ color: "#1890ff" }}
-                    />
-                  </Card>
-                </Col>
-                <Col xs={24} sm={12} md={8}>
-                  <Card>
-                    <Statistic
-                      title="Total Orders"
-                      value={dashboardData?.totalOrders || 0}
-                      prefix={<ShoppingCartOutlined />}
-                      valueStyle={{ color: "#52c41a" }}
-                    />
-                  </Card>
-                </Col>
-                <Col xs={24} sm={12} md={8}>
-                  <Card>
-                    <Statistic
-                      title="Total Revenue"
-                      value={dashboardData?.totalRevenue || 0}
-                      prefix={<DollarOutlined />}
-                      valueStyle={{ color: "#722ed1" }}
-                      formatter={(value) => `$${Number(value).toFixed(2)}`}
-                    />
-                  </Card>
-                </Col>
-              </Row>
-              <Row gutter={[24, 24]} className="mb-8">
-                <Col xs={24} sm={12} md={8}>
-                  <Card>
-                    <Statistic
-                      title="Total Products"
-                      value={dashboardData?.totalProducts || 0}
-                      prefix={<ProductOutlined />}
-                      valueStyle={{ color: "#faad14" }}
-                    />
-                  </Card>
-                </Col>
-                <Col xs={24} sm={12} md={8}>
-                  <Card>
-                    <Statistic
-                      title="Total Reviews"
-                      value={dashboardData?.totalReviews || 0}
-                      valueStyle={{ color: "#eb2f96" }}
-                    />
-                  </Card>
-                </Col>
-                <Col xs={24} sm={12} md={8}>
-                  <Card>
-                    <Statistic
-                      title="Total Product Types"
-                      value={dashboardData?.totalProductTypes || 0}
-                      valueStyle={{ color: "#13c2c2" }}
-                    />
-                  </Card>
-                </Col>
-              </Row>
-            </>
-          )}
-
           {/* Orders Table */}
           {!loading && !error && (
-            <Card title="All Orders" className="mb-8">
-              <Table
-                columns={orderColumns}
-                dataSource={orders}
-                rowKey="id"
-                pagination={{ pageSize: 5 }}
-                scroll={{ x: 1000 }}
-              />
-            </Card>
-          )}
-
-          {/* Quick Actions */}
-          {!loading && !error && (
-            <Row gutter={[16, 16]}>
-              <Col xs={24} sm={12} md={6}>
-                <Button
-                  type="primary"
-                  block
-                  onClick={() => navigate("/admin/users")}
-                >
-                  Manage Users
-                </Button>
-              </Col>
-              <Col xs={24} sm={12} md={6}>
-                <Button
-                  type="primary"
-                  block
-                  onClick={() => navigate("/admin/products")}
-                >
-                  Manage Products
-                </Button>
-              </Col>
-              <Col xs={24} sm={12} md={6}>
-                <Button
-                  type="primary"
-                  block
-                  onClick={() => navigate("/admin/orders")}
-                >
-                  Manage Orders
-                </Button>
-              </Col>
-              <Col xs={24} sm={12} md={6}>
-                <Button
-                  type="primary"
-                  block
-                  onClick={() => navigate("/admin/categories")}
-                >
-                  Manage Categories
-                </Button>
-              </Col>
-            </Row>
+            <Table
+              columns={columns}
+              dataSource={orders}
+              rowKey="id"
+              pagination={{ pageSize: 10 }}
+              scroll={{ x: 1000 }}
+            />
           )}
 
           {/* Order Details Modal */}
@@ -414,4 +403,4 @@ const AdminDashboard: React.FC = () => {
   );
 };
 
-export default AdminDashboard;
+export default ManageOrders;

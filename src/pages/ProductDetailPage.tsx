@@ -48,14 +48,14 @@ const ProductDetailPage: React.FC = () => {
       try {
         setLoading(true);
         const response = await api.getProductById(Number(id));
-        if (response) {
+        if (response.product) {
           setProduct(response.product);
-          setRelatedProducts(response.data.relatedProducts || []);
-          setIsInWishlist(
-            wishlistService.isInWishlist(response.data.product.id)
-          );
+          // For now, we'll set related products to an empty array
+          // You can implement related products functionality later
+          setRelatedProducts([]);
+          setIsInWishlist(wishlistService.isInWishlist(response.product.id));
         } else {
-          message.error(response.message || "Failed to fetch product details");
+          message.error("Failed to fetch product details");
         }
       } catch (error) {
         console.error("Error fetching product details:", error);
