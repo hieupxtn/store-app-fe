@@ -40,30 +40,24 @@ const LoginPage: React.FC = () => {
         const response = await api.login(values);
         console.log("=== LOGIN RESPONSE ===");
         console.log("Full response:", response);
-        console.log("errCode:", response?.errCode);
-        console.log("message:", response?.message);
-        console.log("data:", response?.data);
-
-        if (response && response.errCode === 0) {
+        if (response && response.user && response.token) {
           console.log("=== LOGIN SUCCESS ===");
-          message.success(response.message);
+          message.success("Login successful");
 
-          if (response.data && response.data.token) {
-            console.log("Storing token:", response.data.token);
-            localStorage.setItem("token", response.data.token);
+          console.log("Storing token:", response.token);
+          localStorage.setItem("token", response.token);
 
-            if (response.data.user) {
-              console.log("Storing user data:", response.data.user);
-              localStorage.setItem("user", JSON.stringify(response.data.user));
+          if (response.user) {
+            console.log("Storing user data:", response.user);
+            localStorage.setItem("user", JSON.stringify(response.user));
 
-              // Check if user is admin and redirect accordingly
-              if (response.data.user.typeRole === "admin") {
-                console.log("User is admin, redirecting to admin dashboard");
-                navigate("/admin");
-              } else {
-                console.log("User is not admin, redirecting to home");
-                navigate("/");
-              }
+            // Check if user is admin and redirect accordingly
+            if (response.user.role === "admin") {
+              console.log("User is admin, redirecting to admin dashboard");
+              navigate("/admin");
+            } else {
+              console.log("User is not admin, redirecting to home");
+              navigate("/");
             }
           }
 
@@ -71,9 +65,7 @@ const LoginPage: React.FC = () => {
         } else {
           console.log("=== LOGIN FAILED ===");
           console.log("Error response:", response);
-          message.error(
-            response?.message || "Login failed. Please check your credentials."
-          );
+          message.error("Login failed. Please check your credentials.");
         }
       } catch (apiError: any) {
         console.log("=== API CALL ERROR ===");

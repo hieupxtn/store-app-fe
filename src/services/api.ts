@@ -1,19 +1,19 @@
 import axiosInstance from '../config/axios';
 
 interface LoginResponse {
-  errCode: number;
-  message: string;
-  data: {
-    token: string;
-    user: {
-      id: number;
-      email: string;
-      firstName: string;
-      lastName: string;
-      typeRole: string;
-      keyRole: string;
-    };
+  user: {
+    id: number;
+    email: string;
+    firstName: string;
+    lastName: string;
+    address: string;
+    gender: string;
+    role: string;
+    createdAt: string;
+    updatedAt: string;
+    // ... các field khác nếu cần
   };
+  token: string;
 }
 
 interface RegisterResponse {
@@ -180,12 +180,17 @@ export const api = {
     firstName: string;
     lastName: string;
   }) => {
-    const response = await axiosInstance.post<RegisterResponse>('/api/register', data);
+    const response = await axiosInstance.post<RegisterResponse>('/auth/register', data);
     return response.data;
   },
   
   logout: async () => {
-    const response = await axiosInstance.post<LogoutResponse>('/api/logout');
+    const response = await axiosInstance.post<LogoutResponse>('/auth/logout');
+    return response.data;
+  },
+
+  refreshToken: async () => {
+    const response = await axiosInstance.post<LoginResponse>('/auth/refresh-token');
     return response.data;
   },
 
