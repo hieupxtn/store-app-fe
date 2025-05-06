@@ -57,7 +57,10 @@ const HomePage: React.FC = () => {
     <Layout className="flex flex-col min-h-screen w-full">
       <AppHeader />
       <Content className="p-10 bg-[#bcd5fa] min-h-screen">
-        <Carousel autoplay className="rounded-lg shadow-lg overflow-hidden">
+        <Carousel
+          autoplay
+          className="rounded-lg shadow-lg overflow-hidden mx-14"
+        >
           {["Banner2.png", "Banner1.png"].map((banner, index) => (
             <div key={index}>
               <img
@@ -95,6 +98,8 @@ const HomePage: React.FC = () => {
             </Col>
           ))}
         </Row>
+        <BestSeller />
+        <NewProducts />
         {/* Featured Products Section */}
         <div className="mt-10">
           <div className="flex items-center justify-center mb-8">
@@ -110,8 +115,6 @@ const HomePage: React.FC = () => {
           </div>
           <ProductList products={featuredProducts} loading={loading} />
         </div>
-        <BestSeller />
-        <NewProducts />
         <FeaturedBrands />
       </Content>
       <AppFooter />

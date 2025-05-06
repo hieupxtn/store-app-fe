@@ -241,7 +241,7 @@ const ProductDetailPage: React.FC = () => {
                   {product.quantity > 0 ? "In Stock" : "Out of Stock"}
                 </p>
               </div>
-              <div className="mb-4">
+              <div className="mb-4 mt-10">
                 <span className="font-semibold mr-2">Quantity:</span>
                 <input
                   type="number"
@@ -262,7 +262,7 @@ const ProductDetailPage: React.FC = () => {
                   className="w-20 p-2 border rounded"
                 />
               </div>
-              <div className="flex gap-4">
+              <div className="flex gap-6 mt-10">
                 <Button
                   type="primary"
                   icon={<ShoppingCartOutlined />}
