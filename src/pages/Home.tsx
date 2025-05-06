@@ -108,12 +108,29 @@ const HomePage: React.FC = () => {
               className="!text-gray-500 flex items-center ml-4"
               onClick={() => navigate("/products")}
             >
-              <Title level={2} className="!text-[#803535] !mb-0">
+              <Title
+                level={2}
+                className="!text-[#803535] !mb-0 hover:!text-[#bb8570]"
+              >
                 Featured Products
               </Title>
             </Button>
           </div>
           <ProductList products={featuredProducts} loading={loading} />
+        </div>
+        <div className="flex items-center justify-center mb-8">
+          <Button
+            type="link"
+            className="!text-gray-500 flex items-center ml-4"
+            onClick={() => navigate("/products")}
+          >
+            <Title
+              level={2}
+              className="!text-[#803535] !mb-0 hover:!text-[#bb8570]"
+            >
+              See More <span>&rarr;</span>
+            </Title>
+          </Button>
         </div>
         <FeaturedBrands />
       </Content>
