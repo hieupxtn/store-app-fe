@@ -267,6 +267,54 @@ export interface Brand {
 
 export type BrandsResponse = Brand[];
 
+export interface RelatedProductsResponse {
+  relatedProducts: RelatedProduct[];
+}
+
+export interface RelatedProduct {
+  id: number;
+  productCode: string;
+  productName: string;
+  productTypeId: number;
+  brandId: number;
+  price: number;
+  quantity: number;
+  rating: number;
+  description: string;
+  image: string;
+  createdAt: string;
+  updatedAt: string;
+  ProductType: {
+    id: number;
+    name: string;
+    description: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  Brand: {
+    id: number;
+    name: string;
+    description: string;
+    logo: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+}
+
+export interface Review {
+  id: number;
+  userId: number;
+  productId: number;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReviewsResponse {
+  reviews: Review[];
+}
+
 // Example API endpoints
 export const api = {
   // Auth endpoints
@@ -580,6 +628,26 @@ export const api = {
       return response.data;
     } catch (error) {
       console.error('Error fetching brands:', error);
+      throw error;
+    }
+  },
+
+  getRelatedProducts: async (productId: number): Promise<RelatedProductsResponse> => {
+    try {
+      const response = await axiosInstance.get(`/api/products/${productId}/related`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching related products:', error);
+      throw error;
+    }
+  },
+
+  getProductReviews: async (productId: number): Promise<ReviewsResponse> => {
+    try {
+      const response = await axiosInstance.get(`/api/reviews/${productId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching product reviews:', error);
       throw error;
     }
   },

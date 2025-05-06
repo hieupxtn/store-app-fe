@@ -1,10 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { Card, Row, Col, Rate, Button, message, Spin } from "antd";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  Card,
+  Row,
+  Col,
+  Rate,
+  Button,
+  message,
+  Spin,
+  List,
+  Avatar,
+  Typography,
+} from "antd";
 import {
   ShoppingCartOutlined,
   HeartOutlined,
   HeartFilled,
+  UserOutlined,
 } from "@ant-design/icons";
 import { api } from "../services/api";
 import AppHeader from "../common/AppHeader";
@@ -14,46 +26,99 @@ import { wishlistService } from "../services/wishlistService";
 
 interface ProductDetail {
   id: number;
+  productName: string;
+  price: number;
+  image: string;
+  description: string;
+  specifications: string;
+  rating: number;
+  quantity: number;
+  ProductType: {
+    id: number;
+    name: string;
+    description: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  Brand: {
+    id: number;
+    name: string;
+    description: string;
+    logo: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+}
+
+interface RelatedProduct {
+  id: number;
   productCode: string;
   productName: string;
+  productTypeId: number;
+  brandId: number;
   price: number;
   quantity: number;
   rating: number;
   description: string;
   image: string;
   createdAt: string;
-  type: string | null;
-  averageRating: number;
-  totalReviews: number;
+  updatedAt: string;
+  ProductType: {
+    id: number;
+    name: string;
+    description: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  Brand: {
+    id: number;
+    name: string;
+    description: string;
+    logo: string;
+    createdAt: string;
+    updatedAt: string;
+  };
 }
 
-interface RelatedProduct {
+interface Review {
   id: number;
-  productName: string;
-  price: number;
   rating: number;
-  image: string;
+  comment: string;
+  createdAt: string;
 }
 
 const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<RelatedProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [reviews, setReviews] = useState<Review[]>([]);
 
   useEffect(() => {
     const fetchProductDetail = async () => {
       try {
         setLoading(true);
-        const response = await api.getProductById(Number(id));
-        if (response.product) {
-          setProduct(response.product);
-          // For now, we'll set related products to an empty array
-          // You can implement related products functionality later
-          setRelatedProducts([]);
-          setIsInWishlist(wishlistService.isInWishlist(response.product.id));
+        const [productResponse, relatedResponse, reviewsResponse] =
+          await Promise.all([
+            api.getProductById(Number(id)),
+            api.getRelatedProducts(Number(id)),
+            api.getProductReviews(Number(id)),
+          ]);
+
+        if (productResponse.product) {
+          setProduct(productResponse.product);
+          if (relatedResponse.relatedProducts) {
+            setRelatedProducts(relatedResponse.relatedProducts);
+          }
+          if (reviewsResponse.reviews) {
+            setReviews(reviewsResponse.reviews);
+          }
+          setIsInWishlist(
+            wishlistService.isInWishlist(productResponse.product.id)
+          );
         } else {
           message.error("Failed to fetch product details");
         }
@@ -108,6 +173,10 @@ const ProductDetailPage: React.FC = () => {
     window.dispatchEvent(new Event("storage"));
   };
 
+  const handleRelatedProductClick = (productId: number) => {
+    navigate(`/product/${productId}`);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -152,7 +221,7 @@ const ProductDetailPage: React.FC = () => {
               <div className="mb-4">
                 <Rate disabled defaultValue={product.rating} />
                 <span className="ml-2 text-gray-500">
-                  ({product.totalReviews} reviews)
+                  ({reviews.length} reviews)
                 </span>
               </div>
               <div className="mb-4">
@@ -160,8 +229,12 @@ const ProductDetailPage: React.FC = () => {
               </div>
               <div className="mb-4">
                 <p className="text-gray-600">
-                  <span className="font-semibold">Product Code:</span>{" "}
-                  {product.productCode}
+                  <span className="font-semibold">Brand:</span>{" "}
+                  {product.Brand.name}
+                </p>
+                <p className="text-gray-600">
+                  <span className="font-semibold">Category:</span>{" "}
+                  {product.ProductType.name}
                 </p>
                 <p className="text-gray-600">
                   <span className="font-semibold">Availability:</span>{" "}
@@ -217,6 +290,55 @@ const ProductDetailPage: React.FC = () => {
           </Col>
         </Row>
 
+        {/* Specifications Section */}
+        <div className="mt-8">
+          <h2 className="text-xl font-bold mb-4">Specifications</h2>
+          <Card>
+            <Row gutter={[16, 16]}>
+              {Object.entries(JSON.parse(product.specifications)).map(
+                ([key, value]) => (
+                  <Col xs={24} sm={12} key={key}>
+                    <div className="mb-2">
+                      <span className="font-semibold">{key}:</span>{" "}
+                      <span className="text-gray-600">{value as string}</span>
+                    </div>
+                  </Col>
+                )
+              )}
+            </Row>
+          </Card>
+        </div>
+
+        {/* Reviews Section */}
+        <div className="mt-8">
+          <h2 className="text-xl font-bold mb-4">Customer Reviews</h2>
+          <List
+            itemLayout="horizontal"
+            dataSource={reviews}
+            renderItem={(review) => (
+              <List.Item>
+                <List.Item.Meta
+                  avatar={<Avatar icon={<UserOutlined />} />}
+                  title={
+                    <div className="flex items-center">
+                      <Rate disabled defaultValue={review.rating} />
+                      <span className="ml-2 text-gray-500">
+                        {new Date(review.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  }
+                  description={
+                    <Typography.Paragraph>
+                      {review.comment}
+                    </Typography.Paragraph>
+                  }
+                />
+              </List.Item>
+            )}
+          />
+        </div>
+
+        {/* Related Products Section */}
         <div className="mt-8">
           <h2 className="text-xl font-bold mb-4">Related Products</h2>
           <Row gutter={[16, 16]}>
@@ -224,6 +346,8 @@ const ProductDetailPage: React.FC = () => {
               <Col xs={12} sm={8} md={6} key={relatedProduct.id}>
                 <Card
                   hoverable
+                  onClick={() => handleRelatedProductClick(relatedProduct.id)}
+                  className="cursor-pointer"
                   cover={
                     <img
                       alt={relatedProduct.productName}
@@ -239,7 +363,17 @@ const ProductDetailPage: React.FC = () => {
                         <div className="text-red-600 font-bold">
                           ${relatedProduct.price.toLocaleString()}
                         </div>
-                        <Rate disabled defaultValue={relatedProduct.rating} />
+                        <div className="flex items-center gap-2">
+                          <Rate disabled defaultValue={relatedProduct.rating} />
+                          <span className="text-gray-500">
+                            ({relatedProduct.ProductType.name})
+                          </span>
+                        </div>
+                        <div className="mt-2">
+                          <span className="text-gray-500">
+                            {relatedProduct.Brand.name}
+                          </span>
+                        </div>
                       </div>
                     }
                   />
