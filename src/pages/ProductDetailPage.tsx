@@ -235,7 +235,7 @@ const ProductDetailPage: React.FC = () => {
               <div className="mb-4">
                 <p className="text-gray-600">
                   <span className="font-semibold">Brand:</span>{" "}
-                  {product.Brand.name}
+                  {product?.Brand?.name}
                 </p>
                 <p className="text-gray-600">
                   <span className="font-semibold">Category:</span>{" "}
@@ -371,12 +371,12 @@ const ProductDetailPage: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <Rate disabled defaultValue={relatedProduct.rating} />
                           <span className="text-gray-500">
-                            ({relatedProduct.ProductType.name})
+                            ({relatedProduct.ProductType?.name || "N/A"})
                           </span>
                         </div>
                         <div className="mt-2">
                           <span className="text-gray-500">
-                            {relatedProduct.Brand.name}
+                            {relatedProduct.Brand?.name || "N/A"}
                           </span>
                         </div>
                       </div>

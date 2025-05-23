@@ -22,14 +22,6 @@ interface CustomerInfo {
   email: string;
 }
 
-interface ShippingAddress {
-  address: string;
-  city: string;
-  state: string;
-  country: string;
-  zipCode: string;
-}
-
 interface OrderRequest {
   userId?: number;
   customerInfo: CustomerInfo;

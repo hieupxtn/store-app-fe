@@ -212,31 +212,61 @@ export interface ProductResponse {
 }
 
 export interface OrderItem {
-  id: number;
-  orderId: number;
   productId: number;
+  productName: string;
+  productType: string;
   quantity: number;
   price: number;
-  createdAt: string;
-  updatedAt: string;
+  total: number;
+  image?: string;
+  description?: string;
+  specifications?: string;
+  brand?: string;
+}
+
+export interface CustomerInfo {
+  name: string;
+  phone: string;
+  email: string;
+  address?: string;
+  gender?: string;
 }
 
 export interface Order {
   id: number;
-  userId: number;
-  totalPrice: number;
+  totalAmount: number;
   status: string;
+  shippingAddress: string;
+  paymentMethod: string;
+  customerInfo: CustomerInfo;
+  items: OrderItem[];
   createdAt: string;
   updatedAt: string;
-  OrderItems: OrderItem[];
+  note?: string;
+  trackingNumber?: string;
+  estimatedDeliveryDate?: string;
+  actualDeliveryDate?: string;
+  discount?: number;
+  shippingFee?: number;
+  tax?: number;
+  finalAmount?: number;
 }
 
 export interface OrdersResponse {
+  success: boolean;
   orders: Order[];
+  pagination?: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }
 
 export interface OrderResponse {
+  success: boolean;
   order: Order;
+  message?: string;
 }
 
 export interface ProductType {
@@ -313,6 +343,16 @@ export interface Review {
 
 export interface ReviewsResponse {
   reviews: Review[];
+}
+
+export interface UpdateOrderStatusRequest {
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+}
+
+export interface UpdateOrderStatusResponse {
+  success: boolean;
+  message: string;
+  order: Order;
 }
 
 // Example API endpoints
@@ -656,6 +696,16 @@ export const api = {
       return response.data;
     } catch (error) {
       console.error('Error fetching product reviews:', error);
+      throw error;
+    }
+  },
+
+  updateOrderStatus: async (orderId: number, data: UpdateOrderStatusRequest): Promise<UpdateOrderStatusResponse> => {
+    try {
+      const response = await axiosInstance.patch(`/api/orders/${orderId}/status`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating order status:', error);
       throw error;
     }
   },

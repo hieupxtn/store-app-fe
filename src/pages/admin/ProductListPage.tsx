@@ -94,11 +94,6 @@ const ProductListPage: React.FC = () => {
       ),
     },
     {
-      title: "Code",
-      dataIndex: "productCode",
-      key: "productCode",
-    },
-    {
       title: "Name",
       dataIndex: "productName",
       key: "productName",
@@ -339,10 +334,6 @@ const ProductListPage: React.FC = () => {
                 <div>
                   <h3 className="font-bold">Product Name:</h3>
                   <p>{selectedProduct.productName}</p>
-                </div>
-                <div>
-                  <h3 className="font-bold">Product Code:</h3>
-                  <p>{selectedProduct.productCode}</p>
                 </div>
                 <div>
                   <h3 className="font-bold">Type:</h3>

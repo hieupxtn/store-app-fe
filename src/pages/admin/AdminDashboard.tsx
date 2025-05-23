@@ -22,7 +22,7 @@ import {
   ProductOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { api, DashboardData, Order, OrderItem } from "../../services/api";
+import { api, DashboardData } from "../../services/api";
 import AppHeader from "../../common/AppHeader";
 import AppFooter from "../../common/AppFooter";
 
@@ -35,6 +35,33 @@ interface UserData {
   lastName: string;
   typeRole: string;
   keyRole: string;
+}
+
+interface OrderItem {
+  productId: number;
+  productName: string;
+  productType: string;
+  quantity: number;
+  price: number;
+  total: number;
+}
+
+interface CustomerInfo {
+  name: string;
+  phone: string;
+  email: string;
+}
+
+interface Order {
+  id: number;
+  totalAmount: number;
+  status: string;
+  shippingAddress: string;
+  paymentMethod: string;
+  customerInfo: CustomerInfo;
+  items: OrderItem[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 const AdminDashboard: React.FC = () => {
@@ -83,7 +110,7 @@ const AdminDashboard: React.FC = () => {
         api.getAllOrders(),
       ]);
       setDashboardData(dashboardResponse);
-      setOrders(ordersResponse.orders);
+      setOrders(ordersResponse.orders as unknown as Order[]);
     } catch (error) {
       setError("Failed to fetch data. Please try again later.");
     } finally {
@@ -115,7 +142,7 @@ const AdminDashboard: React.FC = () => {
     try {
       setOrderLoading(true);
       const response = await api.getOrderById(orderId);
-      setSelectedOrder(response.order);
+      setSelectedOrder(response.order as unknown as Order);
       setOrderModalVisible(true);
     } catch (error) {
       message.error("Failed to fetch order details");
@@ -136,15 +163,22 @@ const AdminDashboard: React.FC = () => {
       key: "id",
     },
     {
-      title: "User ID",
-      dataIndex: "userId",
-      key: "userId",
+      title: "Customer",
+      dataIndex: "customerInfo",
+      key: "customerInfo",
+      render: (customerInfo: CustomerInfo) => (
+        <div>
+          <div>{customerInfo.name}</div>
+          <div>{customerInfo.email}</div>
+          <div>{customerInfo.phone}</div>
+        </div>
+      ),
     },
     {
-      title: "Total Price",
-      dataIndex: "totalPrice",
-      key: "totalPrice",
-      render: (price: number) => `$${price.toFixed(2)}`,
+      title: "Total Amount",
+      dataIndex: "totalAmount",
+      key: "totalAmount",
+      render: (amount: number) => `$${amount.toFixed(2)}`,
     },
     {
       title: "Status",
@@ -157,6 +191,12 @@ const AdminDashboard: React.FC = () => {
       ),
     },
     {
+      title: "Payment Method",
+      dataIndex: "paymentMethod",
+      key: "paymentMethod",
+      render: (method: string) => method.toUpperCase(),
+    },
+    {
       title: "Created At",
       dataIndex: "createdAt",
       key: "createdAt",
@@ -167,10 +207,9 @@ const AdminDashboard: React.FC = () => {
       key: "items",
       render: (record: Order) => (
         <div>
-          {record.OrderItems.map((item: OrderItem) => (
-            <div key={item.id}>
-              Product ID: {item.productId} - Qty: {item.quantity} - $
-              {item.price}
+          {record.items.map((item: OrderItem) => (
+            <div key={item.productId}>
+              {item.productName} - Qty: {item.quantity} - ${item.price}
             </div>
           ))}
         </div>
@@ -346,7 +385,7 @@ const AdminDashboard: React.FC = () => {
             open={orderModalVisible}
             onCancel={handleCloseOrderModal}
             footer={null}
-            width={800}
+            width={1200}
           >
             {orderLoading ? (
               <Spin tip="Loading order details..." />
@@ -355,11 +394,21 @@ const AdminDashboard: React.FC = () => {
                 <Descriptions.Item label="Order ID">
                   {selectedOrder.id}
                 </Descriptions.Item>
-                <Descriptions.Item label="User ID">
-                  {selectedOrder.userId}
+                <Descriptions.Item label="Customer Information">
+                  <div>
+                    <div>Name: {selectedOrder.customerInfo.name}</div>
+                    <div>Email: {selectedOrder.customerInfo.email}</div>
+                    <div>Phone: {selectedOrder.customerInfo.phone}</div>
+                  </div>
                 </Descriptions.Item>
-                <Descriptions.Item label="Total Price">
-                  ${selectedOrder.totalPrice.toFixed(2)}
+                <Descriptions.Item label="Shipping Address">
+                  {selectedOrder.shippingAddress.replace(/"/g, "")}
+                </Descriptions.Item>
+                <Descriptions.Item label="Payment Method">
+                  {selectedOrder.paymentMethod.toUpperCase()}
+                </Descriptions.Item>
+                <Descriptions.Item label="Total Amount">
+                  ${selectedOrder.totalAmount.toFixed(2)}
                 </Descriptions.Item>
                 <Descriptions.Item label="Status">
                   <Tag color={getStatusColor(selectedOrder.status)}>
@@ -375,14 +424,19 @@ const AdminDashboard: React.FC = () => {
                 </Descriptions.Item>
                 <Descriptions.Item label="Order Items">
                   <Table
-                    dataSource={selectedOrder.OrderItems}
-                    rowKey="id"
+                    dataSource={selectedOrder.items}
+                    rowKey="productId"
                     pagination={false}
                     columns={[
                       {
-                        title: "Product ID",
-                        dataIndex: "productId",
-                        key: "productId",
+                        title: "Product Name",
+                        dataIndex: "productName",
+                        key: "productName",
+                      },
+                      {
+                        title: "Product Type",
+                        dataIndex: "productType",
+                        key: "productType",
                       },
                       {
                         title: "Quantity",
@@ -397,9 +451,9 @@ const AdminDashboard: React.FC = () => {
                       },
                       {
                         title: "Total",
+                        dataIndex: "total",
                         key: "total",
-                        render: (_, record: OrderItem) =>
-                          `$${(record.quantity * record.price).toFixed(2)}`,
+                        render: (total: number) => `$${total.toFixed(2)}`,
                       },
                     ]}
                   />

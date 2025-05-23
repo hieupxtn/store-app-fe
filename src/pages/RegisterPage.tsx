@@ -31,13 +31,7 @@ const RegisterPage: React.FC = () => {
   }) => {
     setLoading(true);
     try {
-      console.log("=== START REGISTER ATTEMPT ===");
-      console.log("Register values:", values);
-
       const response = await api.register(values);
-      console.log("=== REGISTER RESPONSE ===");
-      console.log("Full response:", response);
-
       if (response && response.user) {
         message.success("Registration successful! Please login.");
         navigate("/login");
@@ -45,21 +39,16 @@ const RegisterPage: React.FC = () => {
         message.error("Registration failed");
       }
     } catch (error: unknown) {
-      console.error("=== REGISTER ERROR ===");
-      console.error("Full error:", error);
       const registerError = error as RegisterError;
       if (registerError.response) {
-        console.error("Response data:", registerError.response.data);
         message.error(
           registerError.response.data?.message ||
             registerError.response.data?.errMessage ||
             "Registration failed. Please try again."
         );
       } else if (registerError.request) {
-        console.error("No response received:", registerError.request);
         message.error("Cannot connect to server. Please try again later.");
       } else {
-        console.error("Error setting up request:", registerError.message);
         message.error("An error occurred. Please try again.");
       }
     } finally {
