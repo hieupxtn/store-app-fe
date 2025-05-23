@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from "react";
-import { Layout, Table, Button, message, Checkbox } from "antd";
+import { Layout, Table, Button, message, Checkbox, Spin } from "antd";
 import { Content } from "antd/es/layout/layout";
 import AppHeader from "../common/AppHeader";
 import AppFooter from "../common/AppFooter";
@@ -19,31 +19,63 @@ interface CartItem {
 
 const CartPage: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const savedCart = cartService.getCart();
-    // Initialize all items as selected by default
-    const cartWithSelection = savedCart.map((item) => ({
-      ...item,
-      selected: true,
-    }));
-    setCart(cartWithSelection);
+    const loadCart = async () => {
+      try {
+        const savedCart = await cartService.getCart();
+        // Initialize all items as selected by default
+        const cartWithSelection = savedCart.map((item) => ({
+          ...item,
+          selected: true,
+        }));
+        setCart(cartWithSelection);
+      } catch (error) {
+        console.error("Error loading cart:", error);
+        message.error("Failed to load cart");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCart();
   }, []);
 
-  const updateQuantity = (id: number, quantity: number) => {
-    const updatedCart = cart.map((item) =>
-      item.id === id ? { ...item, quantity } : item
-    );
-    setCart(updatedCart);
-    cartService.updateCartItem(id, quantity);
+  const updateQuantity = async (id: number, quantity: number) => {
+    try {
+      const updatedCart = await cartService.updateCartItem(id, quantity);
+      setCart(
+        updatedCart.map((item) => ({
+          ...item,
+          selected: cart.find((c) => c.id === item.id)?.selected ?? true,
+        }))
+      );
+      // Trigger storage event to update cart count in header
+      window.dispatchEvent(new Event("storage"));
+    } catch (error) {
+      console.error("Error updating quantity:", error);
+      message.error("Failed to update quantity");
+    }
   };
 
-  const removeItem = (id: number) => {
-    const updatedCart = cart.filter((item) => item.id !== id);
-    setCart(updatedCart);
-    cartService.removeFromCart(id);
-    message.success("Removed item from cart!");
+  const removeItem = async (id: number) => {
+    try {
+      const updatedCart = await cartService.removeFromCart(id);
+      setCart(
+        updatedCart.map((item) => ({
+          ...item,
+          selected: cart.find((c) => c.id === item.id)?.selected ?? true,
+        }))
+      );
+      message.success("Item removed from cart");
+      // Trigger storage event to update cart count in header
+      window.dispatchEvent(new Event("storage"));
+    } catch (error) {
+      console.error("Error removing item:", error);
+      message.error("Failed to remove item from cart");
+    }
   };
 
   const toggleSelectItem = (id: number) => {
@@ -126,6 +158,20 @@ const CartPage: React.FC = () => {
       ),
     },
   ];
+
+  if (loading) {
+    return (
+      <Layout className="min-h-screen flex flex-col">
+        <AppHeader />
+        <Content className="flex-grow p-6 bg-gray-100 h-full">
+          <div className="max-w-4xl mx-auto bg-white p-6 shadow-md rounded-lg min-h-[463px] flex justify-center items-center">
+            <Spin size="large" />
+          </div>
+        </Content>
+        <AppFooter />
+      </Layout>
+    );
+  }
 
   return (
     <Layout className="min-h-screen flex flex-col">

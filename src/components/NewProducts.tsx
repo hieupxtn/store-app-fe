@@ -111,13 +111,17 @@ const NewProducts: React.FC = () => {
 
   // Listen for cart changes
   useEffect(() => {
-    const updateCart = () => {
-      const cart = cartService.getCart();
-      const items: { [key: number]: number } = {};
-      cart.forEach((item) => {
-        items[item.id] = item.quantity;
-      });
-      setCartItems(items);
+    const updateCart = async () => {
+      try {
+        const cart = await cartService.getCart();
+        const items: { [key: number]: number } = {};
+        cart.forEach((item) => {
+          items[item.id] = item.quantity;
+        });
+        setCartItems(items);
+      } catch (error) {
+        console.error("Error updating cart:", error);
+      }
     };
 
     updateCart();
@@ -158,26 +162,30 @@ const NewProducts: React.FC = () => {
     window.dispatchEvent(new Event("storage"));
   };
 
-  const handleAddToCart = (e: React.MouseEvent, product: Product) => {
+  const handleAddToCart = async (e: React.MouseEvent, product: Product) => {
     e.stopPropagation();
-    const cartItem = {
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.image,
-      quantity: 1,
-    };
-    cartService.addToCart(cartItem);
-    message.success("Added to cart!");
-    // Update cart items state
-    const updatedCart = cartService.getCart();
-    const items: { [key: number]: number } = {};
-    updatedCart.forEach((item) => {
-      items[item.id] = item.quantity;
-    });
-    setCartItems(items);
-    // Trigger storage event to update other components
-    window.dispatchEvent(new Event("storage"));
+    try {
+      const cartItem = {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        quantity: 1,
+      };
+      const updatedCart = await cartService.addToCart(cartItem);
+      message.success("Added to cart!");
+      // Update cart items state
+      const items: { [key: number]: number } = {};
+      updatedCart.forEach((item) => {
+        items[item.id] = item.quantity;
+      });
+      setCartItems(items);
+      // Trigger storage event to update other components
+      window.dispatchEvent(new Event("storage"));
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      message.error("Failed to add item to cart");
+    }
   };
 
   const visibleProducts =

@@ -28,6 +28,9 @@ interface WishlistItem {
 
 const WishlistPage: React.FC = () => {
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
+  const [isAddingToCart, setIsAddingToCart] = useState<{
+    [key: number]: boolean;
+  }>({});
 
   useEffect(() => {
     const savedWishlist = wishlistService.getWishlist();
@@ -40,16 +43,28 @@ const WishlistPage: React.FC = () => {
     message.success("Removed from wishlist!");
   };
 
-  const handleAddToCart = (item: WishlistItem) => {
-    const cartItem = {
-      id: item.id,
-      name: item.name,
-      price: item.price,
-      quantity: 1,
-      image: item.image,
-    };
-    cartService.addToCart(cartItem);
-    message.success(`${item.name} added to cart!`);
+  const handleAddToCart = async (item: WishlistItem) => {
+    if (isAddingToCart[item.id]) return;
+
+    setIsAddingToCart((prev) => ({ ...prev, [item.id]: true }));
+    try {
+      const cartItem = {
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: 1,
+        image: item.image,
+      };
+      await cartService.addToCart(cartItem);
+      message.success(`${item.name} added to cart!`);
+      // Trigger storage event to update cart count in AppHeader
+      window.dispatchEvent(new Event("storage"));
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      message.error("Failed to add item to cart");
+    } finally {
+      setIsAddingToCart((prev) => ({ ...prev, [item.id]: false }));
+    }
   };
 
   return (

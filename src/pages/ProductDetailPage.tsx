@@ -137,19 +137,24 @@ const ProductDetailPage: React.FC = () => {
     }
   }, [id]);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product) return;
-    const cartItem = {
-      id: product.id,
-      name: product.productName,
-      price: product.price,
-      quantity: quantity,
-      image: product.image,
-    };
-    cartService.addToCart(cartItem);
-    message.success(`${product.productName} added to cart!`);
-    // Dispatch storage event to update cart count in AppHeader
-    window.dispatchEvent(new Event("storage"));
+    try {
+      const cartItem = {
+        id: product.id,
+        name: product.productName,
+        price: product.price,
+        quantity: quantity,
+        image: product.image,
+      };
+      await cartService.addToCart(cartItem);
+      message.success(`${product.productName} added to cart!`);
+      // Dispatch storage event to update cart count in AppHeader
+      window.dispatchEvent(new Event("storage"));
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      message.error("Failed to add item to cart");
+    }
   };
 
   const handleWishlistToggle = () => {

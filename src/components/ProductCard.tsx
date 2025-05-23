@@ -10,7 +10,7 @@ import { wishlistService } from "../services/wishlistService";
 
 interface Product {
   id: number;
-  name: string;
+  productName: string;
   price: number;
   image: string;
   rating?: number;
@@ -22,21 +22,34 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const [isInWishlist, setIsInWishlist] = useState(false);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   useEffect(() => {
     setIsInWishlist(wishlistService.isInWishlist(product.id));
   }, [product.id]);
 
-  const handleAddToCart = () => {
-    const cartItem = {
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      quantity: 1,
-      image: product.image,
-    };
-    cartService.addToCart(cartItem);
-    message.success(`${product.name} added to cart!`);
+  const handleAddToCart = async () => {
+    if (isAddingToCart) return;
+
+    setIsAddingToCart(true);
+    try {
+      const cartItem = {
+        id: product.id,
+        name: product.productName,
+        price: product.price,
+        quantity: 1,
+        image: product.image,
+      };
+      await cartService.addToCart(cartItem);
+      message.success(`${product.productName} added to cart!`);
+      // Trigger storage event to update cart count in AppHeader
+      window.dispatchEvent(new Event("storage"));
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      message.error("Failed to add item to cart");
+    } finally {
+      setIsAddingToCart(false);
+    }
   };
 
   const handleWishlistToggle = () => {
@@ -46,7 +59,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     } else {
       const wishlistItem = {
         id: product.id,
-        name: product.name,
+        name: product.productName,
         price: product.price,
         image: product.image,
         rating: product.rating,
@@ -55,6 +68,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       message.success("Added to wishlist!");
     }
     setIsInWishlist(!isInWishlist);
+    // Trigger storage event to update wishlist count in AppHeader
+    window.dispatchEvent(new Event("storage"));
   };
 
   return (
@@ -63,13 +78,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       className="w-full sm:w-64 border rounded-lg shadow-md"
       cover={
         <img
-          alt={product.name}
+          alt={product.productName}
           src={product.image}
           className="h-48 object-cover rounded-t-lg"
         />
       }
     >
-      <h3 className="text-lg font-semibold">{product.name}</h3>
+      <h3 className="text-lg font-semibold">{product.productName}</h3>
       <p className="text-gray-500">${product.price.toFixed(2)}</p>
       <div className="flex gap-2 mt-2">
         <Button
@@ -77,6 +92,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           icon={<ShoppingCartOutlined />}
           className="flex-1 bg-blue-500 hover:bg-blue-600"
           onClick={handleAddToCart}
+          loading={isAddingToCart}
         >
           Add to Cart
         </Button>
@@ -92,7 +108,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           }
           onClick={handleWishlistToggle}
         >
-          {isInWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
+          {isInWishlist ? "Remove" : "Wishlist"}
         </Button>
       </div>
     </Card>

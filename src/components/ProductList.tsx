@@ -33,6 +33,9 @@ const ProductList: React.FC<ProductListProps> = ({
   const navigate = useNavigate();
   const [wishlistItems, setWishlistItems] = useState<number[]>([]);
   const [cartItems, setCartItems] = useState<{ [key: number]: number }>({});
+  const [isAddingToCart, setIsAddingToCart] = useState<{
+    [key: number]: boolean;
+  }>({});
 
   useEffect(() => {
     const updateWishlist = () => {
@@ -53,44 +56,61 @@ const ProductList: React.FC<ProductListProps> = ({
   }, []);
 
   useEffect(() => {
-    const updateCart = () => {
-      const cart = cartService.getCart();
-      const items: { [key: number]: number } = {};
-      cart.forEach((item) => {
-        items[item.id] = item.quantity;
-      });
-      setCartItems(items);
+    const updateCart = async () => {
+      try {
+        const cart = await cartService.getCart();
+        const items: { [key: number]: number } = {};
+        cart.forEach((item) => {
+          items[item.id] = item.quantity;
+        });
+        setCartItems(items);
+      } catch (error) {
+        console.error("Error updating cart:", error);
+      }
     };
 
     updateCart();
-    window.addEventListener("storage", updateCart);
-    return () => window.removeEventListener("storage", updateCart);
+    const handleStorageChange = () => {
+      updateCart();
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
   const handleProductClick = (productId: number) => {
     navigate(`/product/${productId}`);
   };
 
-  const handleAddToCart = (e: React.MouseEvent, product: Product) => {
+  const handleAddToCart = async (e: React.MouseEvent, product: Product) => {
     e.stopPropagation();
-    const cartItem = {
-      id: product.id,
-      name: product.productName,
-      price: product.price,
-      image: product.image,
-      quantity: 1,
-    };
-    cartService.addToCart(cartItem);
-    message.success("Added to cart!");
-    // Update cart items state
-    const updatedCart = cartService.getCart();
-    const items: { [key: number]: number } = {};
-    updatedCart.forEach((item) => {
-      items[item.id] = item.quantity;
-    });
-    setCartItems(items);
-    // Trigger storage event to update other components
-    window.dispatchEvent(new Event("storage"));
+    if (isAddingToCart[product.id]) return;
+
+    setIsAddingToCart((prev) => ({ ...prev, [product.id]: true }));
+    try {
+      const cartItem = {
+        id: product.id,
+        name: product.productName,
+        price: product.price,
+        image: product.image,
+        quantity: 1,
+      };
+      const updatedCart = await cartService.addToCart(cartItem);
+      message.success("Added to cart!");
+      // Update cart items state
+      const items: { [key: number]: number } = {};
+      updatedCart.forEach((item) => {
+        items[item.id] = item.quantity;
+      });
+      setCartItems(items);
+      // Trigger storage event to update other components
+      window.dispatchEvent(new Event("storage"));
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      message.error("Failed to add item to cart");
+    } finally {
+      setIsAddingToCart((prev) => ({ ...prev, [product.id]: false }));
+    }
   };
 
   const handleWishlistToggle = (e: React.MouseEvent, product: Product) => {

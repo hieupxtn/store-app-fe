@@ -34,11 +34,15 @@ const AppHeader: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const updateCounts = () => {
-      const cart = cartService.getCart();
-      const wishlist = wishlistService.getWishlist();
-      setCartCount(cart.reduce((sum, item) => sum + item.quantity, 0));
-      setWishlistCount(wishlist.length);
+    const updateCounts = async () => {
+      try {
+        const cart = await cartService.getCart();
+        const wishlist = wishlistService.getWishlist();
+        setCartCount(cart.reduce((sum, item) => sum + item.quantity, 0));
+        setWishlistCount(wishlist.length);
+      } catch (error) {
+        console.error("Error updating counts:", error);
+      }
     };
 
     // Check for user data

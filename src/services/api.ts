@@ -371,8 +371,8 @@ export const api = {
       }),
   
   // Cart endpoints
-  getCart: () => 
-    axiosInstance.get('/cart')
+  getCart: () =>
+    axiosInstance.get('/api/cart')
       .then(response => response.data)
       .catch(error => {
         console.error('Get cart error:', error);
@@ -380,15 +380,23 @@ export const api = {
       }),
   
   addToCart: (productId: number, quantity: number) => 
-    axiosInstance.post('/cart', { productId, quantity })
+    axiosInstance.post('/api/cart', { productId, quantity })
       .then(response => response.data)
       .catch(error => {
         console.error('Add to cart error:', error);
         throw error;
       }),
   
+  updateCartItem: (itemId: number, quantity: number) =>
+    axiosInstance.put(`/api/cart/${itemId}`, { quantity })
+      .then(response => response.data)
+      .catch(error => {
+        console.error('Update cart item error:', error);
+        throw error;
+      }),
+  
   removeFromCart: (productId: number) => 
-    axiosInstance.delete(`/cart/${productId}`)
+    axiosInstance.delete(`/api/cart/${productId}`)
       .then(response => response.data)
       .catch(error => {
         console.error('Remove from cart error:', error);
