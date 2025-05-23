@@ -15,7 +15,7 @@ import ProductList from "../components/ProductList";
 import "../styles/LaptopPage.css";
 import AppHeader from "../common/AppHeader";
 import AppFooter from "../common/AppFooter";
-import { api } from "../services/api";
+import { api, Brand, ProductType } from "../services/api";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -30,13 +30,32 @@ interface FilterState {
 
 interface Product {
   id: number;
-  name: string;
+  productCode: string;
+  productName: string;
+  productType: number;
   price: number;
-  image: string;
-  description: string;
+  quantity: number;
+  quantityLimit: number;
   rating: number;
-  category: string;
-  brand: string;
+  description: string;
+  image: string;
+  createdAt: string;
+  updatedAt: string;
+  ProductType?: {
+    id: number;
+    name: string;
+    description: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  Brand?: {
+    id: number;
+    name: string;
+    description: string;
+    logo: string;
+    createdAt: string;
+    updatedAt: string;
+  };
 }
 
 const ProductsPage: React.FC = () => {
@@ -44,6 +63,8 @@ const ProductsPage: React.FC = () => {
   const navigate = useNavigate();
   const [showFilters, setShowFilters] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [productTypes, setProductTypes] = useState<ProductType[]>([]);
   const [activeFilters, setActiveFilters] = useState<FilterState>({
     categories: [],
     brands: [],
@@ -52,25 +73,92 @@ const ProductsPage: React.FC = () => {
   });
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sortBy, setSortBy] = useState<string>("featured");
 
+  // Fetch brands and product types
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.getAllProducts();
-        setProducts(response.products);
+        const [brandsResponse, typesResponse] = await Promise.all([
+          api.getBrands(),
+          api.getAllProductTypes(),
+        ]);
+        setBrands(brandsResponse);
+        setProductTypes(typesResponse.types);
       } catch (error) {
-        console.error("Failed to fetch products:", error);
-      } finally {
-        setLoading(false);
+        console.error("Failed to fetch data:", error);
       }
     };
-    fetchProducts();
+    fetchData();
   }, []);
+
+  const handleSortChange = (value: string) => {
+    setSortBy(value);
+    const searchParams = new URLSearchParams(location.search);
+    searchParams.set("sort", value);
+    navigate(`/products?${searchParams.toString()}`);
+  };
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+
+      // Add search query
+      if (searchQuery) {
+        params.append("search", searchQuery);
+      }
+
+      // Add price range
+      if (activeFilters.priceRange[0] > 0) {
+        params.append("minPrice", activeFilters.priceRange[0].toString());
+      }
+      if (activeFilters.priceRange[1] < 5000) {
+        params.append("maxPrice", activeFilters.priceRange[1].toString());
+      }
+
+      // Add category and brand filters
+      if (activeFilters.categories.length > 0) {
+        activeFilters.categories.forEach((category) => {
+          params.append("typeId", category);
+        });
+      }
+      if (activeFilters.brands.length > 0) {
+        activeFilters.brands.forEach((brand) => {
+          params.append("brandId", brand);
+        });
+      }
+
+      // Add rating filter
+      if (activeFilters.rating) {
+        params.append("minRating", activeFilters.rating.toString());
+      }
+
+      // Add sort parameter
+      params.append("sort", sortBy);
+
+      const response = await api.getProducts(params);
+      setProducts(response.products);
+    } catch (error) {
+      console.error("Failed to fetch products:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch products when filters or search query changes
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchProducts();
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, activeFilters]);
 
   // Get search parameters from URL
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    const query = searchParams.get("q") || "";
+    const query = searchParams.get("search") || "";
     setSearchQuery(query);
 
     const categories = searchParams.get("categories")?.split(",") || [];
@@ -79,9 +167,11 @@ const ProductsPage: React.FC = () => {
       Number(searchParams.get("minPrice")) || 0,
       Number(searchParams.get("maxPrice")) || 5000,
     ] as [number, number];
-    const rating = searchParams.get("rating")
-      ? Number(searchParams.get("rating"))
+    const rating = searchParams.get("minRating")
+      ? Number(searchParams.get("minRating"))
       : undefined;
+    const sort = searchParams.get("sort") || "featured";
+    setSortBy(sort);
 
     setActiveFilters({
       categories,
@@ -95,12 +185,13 @@ const ProductsPage: React.FC = () => {
     type: keyof FilterState,
     value: string | string[] | [number, number] | number
   ) => {
+    console.log("Filter change:", type, value);
     const newFilters = { ...activeFilters, [type]: value };
     setActiveFilters(newFilters);
 
     // Update URL with new filters
     const searchParams = new URLSearchParams();
-    if (searchQuery) searchParams.set("q", searchQuery);
+    if (searchQuery) searchParams.set("search", searchQuery);
     if (newFilters.categories.length)
       searchParams.set("categories", newFilters.categories.join(","));
     if (newFilters.brands.length)
@@ -110,42 +201,10 @@ const ProductsPage: React.FC = () => {
     if (newFilters.priceRange[1] < 5000)
       searchParams.set("maxPrice", newFilters.priceRange[1].toString());
     if (newFilters.rating)
-      searchParams.set("rating", newFilters.rating.toString());
+      searchParams.set("minRating", newFilters.rating.toString());
 
     navigate(`/products?${searchParams.toString()}`);
   };
-
-  // Filter products based on search and filters
-  const filteredProducts = products.filter((product) => {
-    const matchesSearch =
-      (product.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-      (product.description?.toLowerCase() || "").includes(
-        searchQuery.toLowerCase()
-      );
-
-    const matchesCategory =
-      activeFilters.categories.length === 0 ||
-      activeFilters.categories.includes(product.category);
-
-    const matchesBrand =
-      activeFilters.brands.length === 0 ||
-      activeFilters.brands.includes(product.brand);
-
-    const matchesPrice =
-      product.price >= activeFilters.priceRange[0] &&
-      product.price <= activeFilters.priceRange[1];
-
-    const matchesRating =
-      !activeFilters.rating || product.rating >= activeFilters.rating;
-
-    return (
-      matchesSearch &&
-      matchesCategory &&
-      matchesBrand &&
-      matchesPrice &&
-      matchesRating
-    );
-  });
 
   return (
     <Layout className="products-page">
@@ -177,10 +236,11 @@ const ProductsPage: React.FC = () => {
                           handleFilterChange("categories", values)
                         }
                       >
-                        <Checkbox value="Laptops">Laptops</Checkbox>
-                        <Checkbox value="Phones">Phones</Checkbox>
-                        <Checkbox value="TVs">TVs</Checkbox>
-                        <Checkbox value="Accessories">Accessories</Checkbox>
+                        {productTypes.map((type) => (
+                          <Checkbox key={type.id} value={type.id.toString()}>
+                            {type.name}
+                          </Checkbox>
+                        ))}
                       </Checkbox.Group>
                     </div>
                   </div>
@@ -196,10 +256,11 @@ const ProductsPage: React.FC = () => {
                           handleFilterChange("brands", values)
                         }
                       >
-                        <Checkbox value="ASUS">ASUS</Checkbox>
-                        <Checkbox value="Apple">Apple</Checkbox>
-                        <Checkbox value="Samsung">Samsung</Checkbox>
-                        <Checkbox value="Logitech">Logitech</Checkbox>
+                        {brands.map((brand) => (
+                          <Checkbox key={brand.id} value={brand.id.toString()}>
+                            {brand.name}
+                          </Checkbox>
+                        ))}
                       </Checkbox.Group>
                     </div>
                   </div>
@@ -207,39 +268,54 @@ const ProductsPage: React.FC = () => {
                   {/* Price Range */}
                   <div>
                     <Text strong>Price Range</Text>
-                    <Slider
-                      range
-                      min={0}
-                      max={5000}
-                      value={activeFilters.priceRange}
-                      onChange={(value) =>
-                        handleFilterChange(
-                          "priceRange",
-                          value as [number, number]
-                        )
-                      }
-                    />
-                    <div className="flex justify-between text-xs">
-                      <span>${activeFilters.priceRange[0]}</span>
-                      <span>${activeFilters.priceRange[1]}</span>
+                    <div className="mt-2">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Slider
+                          range
+                          min={0}
+                          max={5000}
+                          value={activeFilters.priceRange}
+                          onChange={(value) =>
+                            handleFilterChange(
+                              "priceRange",
+                              value as [number, number]
+                            )
+                          }
+                          className="flex-1"
+                        />
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-500">
+                        <span>${activeFilters.priceRange[0]}</span>
+                        <span>${activeFilters.priceRange[1]}</span>
+                      </div>
                     </div>
                   </div>
 
                   {/* Rating */}
                   <div>
                     <Text strong>Rating</Text>
-                    <Slider
-                      min={0}
-                      max={5}
-                      step={0.5}
-                      value={activeFilters.rating || 0}
-                      onChange={(value) =>
-                        handleFilterChange("rating", value as number)
-                      }
-                    />
-                    <div className="flex justify-between text-xs">
-                      <span>0</span>
-                      <span>5</span>
+                    <div className="mt-2">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Slider
+                          min={0}
+                          max={5}
+                          step={0.5}
+                          value={activeFilters.rating || 0}
+                          onChange={(value) => {
+                            handleFilterChange("rating", value);
+                          }}
+                          className="flex-1"
+                        />
+                        <span className="text-sm font-medium min-w-[40px] text-right">
+                          {activeFilters.rating
+                            ? `${activeFilters.rating}★`
+                            : ""}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-500">
+                        <span>0★</span>
+                        <span>5★</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -257,12 +333,16 @@ const ProductsPage: React.FC = () => {
                     ? `Search results for: "${searchQuery}"`
                     : "All Products"}
                   <Text type="secondary" className="ml-2">
-                    ({filteredProducts.length} products)
+                    ({products.length} products)
                   </Text>
                 </Title>
                 <div className="flex items-center space-x-4">
                   <Text>Sort by:</Text>
-                  <Select defaultValue="featured" style={{ width: 200 }}>
+                  <Select
+                    value={sortBy}
+                    onChange={handleSortChange}
+                    style={{ width: 200 }}
+                  >
                     <Option value="featured">Featured</Option>
                     <Option value="price_low">Price: Low to High</Option>
                     <Option value="price_high">Price: High to Low</Option>
@@ -273,7 +353,7 @@ const ProductsPage: React.FC = () => {
               </div>
 
               {/* Product List */}
-              <ProductList products={filteredProducts} loading={loading} />
+              <ProductList products={products} loading={loading} />
             </div>
           </Col>
         </Row>

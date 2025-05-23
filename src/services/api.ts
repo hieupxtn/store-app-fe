@@ -354,8 +354,8 @@ export const api = {
   },
   
   // Product endpoints
-  getProducts: () => 
-    axiosInstance.get('/products')
+  getProducts: (params?: URLSearchParams) => 
+    axiosInstance.get(`/api/products${params ? `?${params.toString()}` : ''}`)
       .then(response => response.data)
       .catch(error => {
         console.error('Get products error:', error);

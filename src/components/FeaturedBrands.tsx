@@ -56,7 +56,7 @@ const FeaturedBrands: React.FC = () => {
                   },
                 }}
                 onClick={() =>
-                  navigate(`/products?brands=${encodeURIComponent(brand.name)}`)
+                  navigate(`/products?brands=${encodeURIComponent(brand.id)}`)
                 }
               >
                 <img

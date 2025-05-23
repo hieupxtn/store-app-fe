@@ -20,8 +20,11 @@ interface UserData {
   email: string;
   firstName: string;
   lastName: string;
-  typeRole: string;
-  keyRole: string;
+  address: string;
+  gender: boolean;
+  role: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 const AppHeader: React.FC = () => {
@@ -81,9 +84,17 @@ const AppHeader: React.FC = () => {
     },
   ];
 
+  const buildSearchUrl = (searchValue: string) => {
+    const params = new URLSearchParams();
+    if (searchValue.trim()) {
+      params.append("search", searchValue.trim());
+    }
+    return `/products?${params.toString()}`;
+  };
+
   const handleSearch = (value: string) => {
     if (value.trim()) {
-      navigate(`/products?search=${encodeURIComponent(value)}`);
+      navigate(buildSearchUrl(value));
     }
   };
 
@@ -91,7 +102,7 @@ const AppHeader: React.FC = () => {
     <Header className="!bg-[#002d6a] flex items-center justify-center px-6 !shadow-md !sticky top-0 z-10">
       <Col className="flex items-center mx-15 !text-xl !font-bold">
         <Link
-          to="/"
+          to={user?.role === "admin" ? "/admin" : "/"}
           className="flex items-center !font-bold !text-blue-100 hover:!text-blue-600 !transition"
         >
           <Avatar
