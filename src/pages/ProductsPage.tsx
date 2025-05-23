@@ -348,6 +348,7 @@ const ProductsPage: React.FC = () => {
                     <Option value="price_high">Price: High to Low</Option>
                     <Option value="rating">Rating</Option>
                     <Option value="newest">Newest</Option>
+                    <Option value="best_seller">Best Seller</Option>
                   </Select>
                 </div>
               </div>

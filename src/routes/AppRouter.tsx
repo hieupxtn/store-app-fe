@@ -16,6 +16,7 @@ import ManageOrders from "../pages/admin/ManageOrders";
 import ProductsPage from "../pages/ProductsPage";
 import BrandsPage from "../pages/BrandsPage";
 import ManageCategories from "../pages/admin/ManageCategories";
+import OrderSuccessPage from "../pages/OrderSuccessPage";
 
 const AppRouter: React.FC = () => {
   return (
@@ -31,6 +32,7 @@ const AppRouter: React.FC = () => {
         <Route path="/payment" element={<PaymentPage />} />
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/brands" element={<BrandsPage />} />
+        <Route path="/order-success" element={<OrderSuccessPage />} />
 
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminDashboard />} />

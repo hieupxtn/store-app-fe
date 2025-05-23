@@ -214,7 +214,7 @@ const BestSeller: React.FC = () => {
         <Button
           type="link"
           className="!text-gray-500 flex items-center"
-          onClick={() => navigate("/products?sort=best-seller")}
+          onClick={() => navigate("/products?sort=best_seller")}
         >
           See More <span>&rarr;</span>
         </Button>

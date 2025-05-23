@@ -27,8 +27,8 @@ const BrandsPage: React.FC = () => {
     fetchBrands();
   }, []);
 
-  const handleBrandClick = (brandName: string) => {
-    navigate(`/products?brands=${encodeURIComponent(brandName)}`);
+  const handleBrandClick = (brandId: number) => {
+    navigate(`/products?brands=${encodeURIComponent(brandId)}`);
   };
 
   return (
@@ -50,7 +50,7 @@ const BrandsPage: React.FC = () => {
                 <Col xs={24} sm={12} md={8} lg={6} key={brand.id}>
                   <Card
                     className="!rounded-xl !bg-[#fafbfc] !border-none hover:!shadow-lg transition-all cursor-pointer h-full"
-                    onClick={() => handleBrandClick(brand.name)}
+                    onClick={() => handleBrandClick(brand.id)}
                   >
                     <div className="flex flex-col items-center justify-center h-full">
                       <img

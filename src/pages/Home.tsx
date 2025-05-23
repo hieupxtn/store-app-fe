@@ -42,15 +42,14 @@ const HomePage: React.FC = () => {
   }, []);
 
   const productTypes = [
-    { name: "PC Gaming", image: "/images/pc.png", type: 1 },
     { name: "Laptops", image: "/images/laptop.png", type: 2 },
-    { name: "Smartphones", image: "/images/smartphone.png", type: 3 },
+    { name: "Smartphones", image: "/images/smartphone.png", type: 1 },
     { name: "Gear", image: "/images/gear.png", type: 4 },
-    { name: "Card Gaming", image: "/images/card.png", type: 5 },
+    { name: "Components", image: "/images/pc.png", type: 7 },
   ];
 
   const handleProductTypeClick = (type: number) => {
-    navigate(`/products?type=${type}`);
+    navigate(`/products?categories=${type}`);
   };
 
   return (
