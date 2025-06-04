@@ -8,6 +8,9 @@ import {
   Descriptions,
   Spin,
   message,
+  Rate,
+  Form,
+  Input,
 } from "antd";
 import { useNavigate } from "react-router-dom";
 import { api, Order } from "../services/api";
@@ -15,6 +18,7 @@ import AppHeader from "../common/AppHeader";
 import AppFooter from "../common/AppFooter";
 
 const { Content } = Layout;
+const { TextArea } = Input;
 
 const statusMap: { [key: string]: string } = {
   pending: "Đang chờ",
@@ -36,6 +40,12 @@ const PurchaseHistoryPage: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderModalVisible, setOrderModalVisible] = useState(false);
   const [orderLoading, setOrderLoading] = useState(false);
+  const [ratingModalVisible, setRatingModalVisible] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<{
+    id: number;
+    name: string;
+  } | null>(null);
+  const [ratingForm] = Form.useForm();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -103,6 +113,52 @@ const PurchaseHistoryPage: React.FC = () => {
     setSelectedOrder(null);
   };
 
+  const handleRateProduct = (productId: number, productName: string) => {
+    setSelectedProduct({ id: productId, name: productName });
+    setRatingModalVisible(true);
+  };
+
+  const handleSubmitRating = async (values: {
+    rating: number;
+    comment: string;
+  }) => {
+    try {
+      const userData = JSON.parse(localStorage.getItem("user") || "{}");
+      if (!userData || !userData.id) {
+        message.error("Vui lòng đăng nhập để đánh giá sản phẩm");
+        return;
+      }
+
+      await api.createReview({
+        userId: userData.id,
+        productId: selectedProduct!.id,
+        rating: values.rating,
+        comment: values.comment,
+      });
+
+      message.success("Cảm ơn bạn đã đánh giá sản phẩm!");
+      setRatingModalVisible(false);
+      ratingForm.resetFields();
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      message.error("Có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại!");
+    }
+  };
+
+  const handleConfirmReceived = async (orderId: number) => {
+    try {
+      await api.confirmOrderReceived(orderId);
+      message.success("Xác nhận đã nhận hàng thành công!");
+      // Refresh orders list
+      fetchOrders();
+    } catch (error) {
+      console.error("Error confirming order received:", error);
+      message.error(
+        "Có lỗi xảy ra khi xác nhận đã nhận hàng. Vui lòng thử lại!"
+      );
+    }
+  };
+
   const columns = [
     {
       title: "Mã đơn hàng",
@@ -139,9 +195,20 @@ const PurchaseHistoryPage: React.FC = () => {
       title: "Hành động",
       key: "actions",
       render: (_: unknown, record: Order) => (
-        <Button type="link" onClick={() => handleViewOrder(record.id)}>
-          Xem chi tiết
-        </Button>
+        <div className="space-x-2">
+          <Button type="link" onClick={() => handleViewOrder(record.id)}>
+            Xem chi tiết
+          </Button>
+          {record.status.toLowerCase() === "delivered" && (
+            <Button
+              type="primary"
+              onClick={() => handleConfirmReceived(record.id)}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              Xác nhận đã nhận hàng
+            </Button>
+          )}
+        </div>
       ),
     },
   ];
@@ -247,6 +314,24 @@ const PurchaseHistoryPage: React.FC = () => {
                           `${total.toLocaleString()} VND`,
                         align: "right" as const,
                       },
+                      {
+                        title: "Đánh giá",
+                        key: "rating",
+                        render: (_, record) =>
+                          selectedOrder.status.toLowerCase() === "completed" ? (
+                            <Button
+                              type="link"
+                              onClick={() =>
+                                handleRateProduct(
+                                  record.productId,
+                                  record.productName
+                                )
+                              }
+                            >
+                              Đánh giá
+                            </Button>
+                          ) : null,
+                      },
                     ]}
                   />
                 </div>
@@ -293,6 +378,53 @@ const PurchaseHistoryPage: React.FC = () => {
                 )}
               </div>
             ) : null}
+          </Modal>
+
+          <Modal
+            title={`Đánh giá sản phẩm: ${selectedProduct?.name}`}
+            open={ratingModalVisible}
+            onCancel={() => {
+              setRatingModalVisible(false);
+              ratingForm.resetFields();
+            }}
+            footer={null}
+          >
+            <Form
+              form={ratingForm}
+              onFinish={handleSubmitRating}
+              layout="vertical"
+            >
+              <Form.Item
+                name="rating"
+                label="Đánh giá của bạn"
+                rules={[
+                  { required: true, message: "Vui lòng chọn số sao đánh giá!" },
+                ]}
+              >
+                <Rate allowHalf />
+              </Form.Item>
+
+              <Form.Item
+                name="comment"
+                label="Nhận xét của bạn"
+                rules={[{ required: true, message: "Vui lòng nhập nhận xét!" }]}
+              >
+                <TextArea
+                  rows={4}
+                  placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..."
+                />
+              </Form.Item>
+
+              <Form.Item>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  Gửi đánh giá
+                </Button>
+              </Form.Item>
+            </Form>
           </Modal>
         </div>
       </Content>

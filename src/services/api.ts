@@ -354,6 +354,23 @@ export interface UpdateOrderStatusResponse {
   order: Order;
 }
 
+export interface ConfirmOrderReceivedResponse {
+  success: boolean;
+  message: string;
+  order: Order;
+}
+
+export interface ReviewData {
+  userId: number;
+  productId: number;
+  rating: number;
+  comment: string;
+}
+
+export interface UploadImageResponse {
+  url: string;
+}
+
 export const api = {
   login: async (data: { email: string; password: string }) => {
     const response = await axiosInstance.post<LoginResponse>('/api/login', data);
@@ -708,4 +725,18 @@ export const api = {
       throw error;
     }
   },
-}; 
+
+  createReview: (data: ReviewData) => {
+    return axiosInstance.post<Review>("/api/reviews", data);
+  },
+
+  confirmOrderReceived: async (orderId: number): Promise<ConfirmOrderReceivedResponse> => {
+    try {
+      const response = await axiosInstance.patch(`/api/orders/${orderId}/received`);
+      return response.data;
+    } catch (error) {
+      console.error('Error confirming order received:', error);
+      throw error;
+    }
+  },
+};

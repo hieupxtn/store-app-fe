@@ -314,7 +314,6 @@ const ProductDetailPage: React.FC = () => {
           </Card>
         </div>
 
-        {/* Reviews Section */}
         <div className="mt-8">
           <h2 className="text-xl font-bold mb-4">Bình luận khách hàng</h2>
           <List

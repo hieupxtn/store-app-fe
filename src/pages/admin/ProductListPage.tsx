@@ -13,6 +13,7 @@ import {
   Input,
   InputNumber,
   Select,
+  Upload,
 } from "antd";
 import { useNavigate } from "react-router-dom";
 import {
@@ -23,6 +24,8 @@ import {
 } from "../../services/api";
 import AppHeader from "../../common/AppHeader";
 import AppFooter from "../../common/AppFooter";
+import { UploadOutlined } from "@ant-design/icons";
+import type { UploadChangeParam } from "antd/es/upload";
 
 const { Content } = Layout;
 const { TextArea } = Input;
@@ -268,6 +271,45 @@ const ProductListPage: React.FC = () => {
     }
   };
 
+  const handleImageUpload = (info: UploadChangeParam) => {
+    console.log("info", info);
+    if (info.file.name) {
+      const fileName = info.file.name;
+      const fullPath = `/public/products/${fileName}`;
+      form.setFieldValue("image", fullPath);
+      createForm.setFieldValue("image", fullPath);
+    }
+  };
+
+  const uploadProps = {
+    onChange: handleImageUpload,
+    beforeUpload: (file: File) => {
+      const isImage = file.type.startsWith("image/");
+      if (!isImage) {
+        message.error("Bạn chỉ có thể tải lên file ảnh!");
+      }
+      const isLt2M = file.size / 1024 / 1024 < 2;
+      if (!isLt2M) {
+        message.error("Ảnh phải nhỏ hơn 2MB!");
+      }
+      return isImage && isLt2M;
+    },
+  };
+
+  const ImageUploadFormItem = () => (
+    <Form.Item
+      name="image"
+      label="Hình ảnh"
+      rules={[{ required: true, message: "Vui lòng tải lên hình ảnh!" }]}
+    >
+      <div className="flex flex-col gap-2">
+        <Upload {...uploadProps}>
+          <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
+        </Upload>
+      </div>
+    </Form.Item>
+  );
+
   return (
     <Layout className="flex flex-col min-h-screen w-full">
       <AppHeader />
@@ -435,15 +477,6 @@ const ProductListPage: React.FC = () => {
               >
                 <TextArea rows={4} />
               </Form.Item>
-
-              <Form.Item
-                name="image"
-                label="Hình ảnh"
-                rules={[{ required: true, message: "Vui lòng nhập hình ảnh!" }]}
-              >
-                <Input />
-              </Form.Item>
-
               <Form.Item>
                 <Button type="primary" htmlType="submit" loading={loading}>
                   Cập nhật sản phẩm
@@ -532,13 +565,7 @@ const ProductListPage: React.FC = () => {
                 <TextArea rows={4} />
               </Form.Item>
 
-              <Form.Item
-                name="image"
-                label="Hình ảnh"
-                rules={[{ required: true, message: "Vui lòng nhập hình ảnh!" }]}
-              >
-                <Input />
-              </Form.Item>
+              <ImageUploadFormItem />
 
               <Form.Item>
                 <Button type="primary" htmlType="submit" loading={loading}>
