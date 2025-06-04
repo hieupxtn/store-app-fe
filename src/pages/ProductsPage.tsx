@@ -256,7 +256,6 @@ const ProductsPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Price Range */}
                   <div>
                     <Text strong>Khoảng giá</Text>
                     <div className="mt-2">
@@ -275,13 +274,65 @@ const ProductsPage: React.FC = () => {
                           className="flex-1"
                         />
                       </div>
-                      <div className="flex justify-between text-xs text-gray-500">
-                        <span>
-                          {activeFilters.priceRange[0].toLocaleString()} VND
-                        </span>
-                        <span>
-                          {activeFilters.priceRange[1].toLocaleString()} VND
-                        </span>
+                      <div className="flex items-center justify-between space-x-2">
+                        <div className="flex items-center space-x-1">
+                          <div className="relative">
+                            <input
+                              type="text"
+                              className="w-32 px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              value={activeFilters.priceRange[0].toLocaleString()}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(
+                                  /[^0-9]/g,
+                                  ""
+                                );
+                                const numValue = Math.max(
+                                  0,
+                                  Math.min(
+                                    Number(value),
+                                    activeFilters.priceRange[1]
+                                  )
+                                );
+                                handleFilterChange("priceRange", [
+                                  numValue,
+                                  activeFilters.priceRange[1],
+                                ]);
+                              }}
+                              placeholder="0"
+                            />
+                            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">
+                              VND
+                            </span>
+                          </div>
+                        </div>
+                        <span className="text-gray-400">-</span>
+                        <div className="flex items-center space-x-1">
+                          <div className="relative">
+                            <input
+                              type="text"
+                              className="w-32 px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              value={activeFilters.priceRange[1].toLocaleString()}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(
+                                  /[^0-9]/g,
+                                  ""
+                                );
+                                const numValue = Math.max(
+                                  activeFilters.priceRange[0],
+                                  Math.min(Number(value), 50000000)
+                                );
+                                handleFilterChange("priceRange", [
+                                  activeFilters.priceRange[0],
+                                  numValue,
+                                ]);
+                              }}
+                              placeholder="50,000,000"
+                            />
+                            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">
+                              VND
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
