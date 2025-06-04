@@ -52,6 +52,11 @@ const statusMap: { [key: string]: string } = {
   completed: "Hoàn thành",
 };
 
+const paymentMethodMap: { [key: string]: string } = {
+  CREDIT_CARD: "Thẻ tín dụng",
+  COD: "Thanh toán khi nhận hàng",
+};
+
 interface UserData {
   id: number;
   email: string;
@@ -270,8 +275,7 @@ const ManageOrders: React.FC = () => {
         >
           <Button type="link" className="p-0">
             <Tag color={getStatusColor(status)}>
-              {statusMap[status.toLowerCase()] ||
-                status.charAt(0).toUpperCase() + status.slice(1)}
+              {statusMap[status.toLowerCase()] || status}
               <DownOutlined className="ml-1" />
             </Tag>
           </Button>
@@ -291,7 +295,7 @@ const ManageOrders: React.FC = () => {
       title: "Phương thức thanh toán",
       dataIndex: "paymentMethod",
       key: "paymentMethod",
-      render: (method: string) => method.toUpperCase(),
+      render: (method: string) => paymentMethodMap[method] || method,
     },
     {
       title: "Ngày tạo",
@@ -431,8 +435,7 @@ const ManageOrders: React.FC = () => {
                   <Descriptions.Item label="Trạng thái" span={1}>
                     <Tag color={getStatusColor(selectedOrder.status)}>
                       {statusMap[selectedOrder.status.toLowerCase()] ||
-                        selectedOrder.status.charAt(0).toUpperCase() +
-                          selectedOrder.status.slice(1)}
+                        selectedOrder.status}
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item label="Tên khách hàng" span={1}>
@@ -448,7 +451,8 @@ const ManageOrders: React.FC = () => {
                     {selectedOrder.shippingAddress.replace(/"/g, "")}
                   </Descriptions.Item>
                   <Descriptions.Item label="Phương thức thanh toán" span={1}>
-                    {selectedOrder.paymentMethod.toUpperCase()}
+                    {paymentMethodMap[selectedOrder.paymentMethod] ||
+                      selectedOrder.paymentMethod}
                   </Descriptions.Item>
                   <Descriptions.Item label="Ngày tạo" span={1}>
                     {new Date(selectedOrder.createdAt).toLocaleString()}

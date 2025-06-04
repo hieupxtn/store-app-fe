@@ -25,6 +25,11 @@ const statusMap: { [key: string]: string } = {
   completed: "Hoàn thành",
 };
 
+const paymentMethodMap: { [key: string]: string } = {
+  CREDIT_CARD: "Thẻ tín dụng",
+  COD: "Thanh toán khi nhận hàng",
+};
+
 const PurchaseHistoryPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -198,7 +203,8 @@ const PurchaseHistoryPage: React.FC = () => {
                     {selectedOrder.shippingAddress}
                   </Descriptions.Item>
                   <Descriptions.Item label="Phương thức thanh toán" span={1}>
-                    {selectedOrder.paymentMethod.toUpperCase()}
+                    {paymentMethodMap[selectedOrder.paymentMethod] ||
+                      selectedOrder.paymentMethod}
                   </Descriptions.Item>
                   <Descriptions.Item label="Ngày đặt hàng" span={1}>
                     {new Date(selectedOrder.createdAt).toLocaleString()}

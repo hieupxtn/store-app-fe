@@ -28,6 +28,20 @@ import AppFooter from "../../common/AppFooter";
 
 const { Content } = Layout;
 
+const statusMap: { [key: string]: string } = {
+  pending: "Đang chờ",
+  processing: "Đang xử lý",
+  shipped: "Đang giao hàng",
+  delivered: "Đã giao hàng",
+  cancelled: "Đã hủy",
+  completed: "Hoàn thành",
+};
+
+const paymentMethodMap: { [key: string]: string } = {
+  CREDIT_CARD: "Thẻ tín dụng",
+  COD: "Thanh toán khi nhận hàng",
+};
+
 interface UserData {
   id: number;
   email: string;
@@ -183,7 +197,7 @@ const AdminDashboard: React.FC = () => {
       key: "status",
       render: (status: string) => (
         <Tag color={getStatusColor(status)}>
-          {status.charAt(0).toUpperCase() + status.slice(1)}
+          {statusMap[status.toLowerCase()] || status}
         </Tag>
       ),
     },
@@ -191,7 +205,7 @@ const AdminDashboard: React.FC = () => {
       title: "Phương thức thanh toán",
       dataIndex: "paymentMethod",
       key: "paymentMethod",
-      render: (method: string) => method.toUpperCase(),
+      render: (method: string) => paymentMethodMap[method] || method,
     },
     {
       title: "Ngày tạo",
@@ -405,15 +419,16 @@ const AdminDashboard: React.FC = () => {
                   {selectedOrder.shippingAddress.replace(/"/g, "")}
                 </Descriptions.Item>
                 <Descriptions.Item label="Phương thức thanh toán">
-                  {selectedOrder.paymentMethod.toUpperCase()}
+                  {paymentMethodMap[selectedOrder.paymentMethod] ||
+                    selectedOrder.paymentMethod}
                 </Descriptions.Item>
                 <Descriptions.Item label="Tổng tiền">
                   {selectedOrder.totalAmount.toLocaleString()} VND
                 </Descriptions.Item>
-                <Descriptions.Item label="Trạng thái">
+                <Descriptions.Item label="Trạng thái" span={1}>
                   <Tag color={getStatusColor(selectedOrder.status)}>
-                    {selectedOrder.status.charAt(0).toUpperCase() +
-                      selectedOrder.status.slice(1)}
+                    {statusMap[selectedOrder.status.toLowerCase()] ||
+                      selectedOrder.status}
                   </Tag>
                 </Descriptions.Item>
                 <Descriptions.Item label="Ngày tạo">
