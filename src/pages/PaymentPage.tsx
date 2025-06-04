@@ -40,13 +40,10 @@ interface PaymentFormValues {
   expiryDate?: string;
   cvv?: string;
   name?: string;
-  // Customer information
   customerName: string;
   customerPhone: string;
   customerEmail: string;
-  // Shipping address
   shippingAddress: string;
-  // Optional coupon
   couponCode?: string;
 }
 
@@ -57,7 +54,6 @@ const PaymentPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<string>("card");
 
-  // Get user info from localStorage
   const userInfo = localStorage.getItem("user");
   const currentUser = userInfo
     ? JSON.parse(userInfo)
@@ -68,7 +64,6 @@ const PaymentPage: React.FC = () => {
         shippingAddress: "",
       };
 
-  // Get selected items from location state
   const selectedItems: CartItem[] = location.state?.selectedItems || [];
 
   const totalPrice = selectedItems.reduce(
@@ -76,7 +71,6 @@ const PaymentPage: React.FC = () => {
     0
   );
 
-  // Format card number with spaces after every 4 digits
   const formatCardNumber = (value: string) => {
     const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
     const matches = v.match(/\d{4,16}/g);
@@ -94,35 +88,27 @@ const PaymentPage: React.FC = () => {
     }
   };
 
-  // Validate expiry date
   const validateExpiryDate = (value: string) => {
     if (!value) return false;
 
-    // Check format MM/YY
     if (!/^\d{2}\/\d{2}$/.test(value)) return false;
 
     const [month, year] = value.split("/");
     const monthNum = parseInt(month);
     const yearNum = parseInt(year);
 
-    // Get current date
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear() % 100;
 
-    // Check if month is valid (1-12)
     if (monthNum < 1 || monthNum > 12) {
       return false;
     }
 
-    // For 2-digit years, we need to handle the case where current year is greater than input year
-    // For example: current year is 25, input year is 22
-    // In this case, we should consider 22 as 2022 and 25 as 2025
     const fullCurrentYear =
       Math.floor(currentDate.getFullYear() / 100) * 100 + currentYear;
     const fullInputYear =
       Math.floor(currentDate.getFullYear() / 100) * 100 + yearNum;
 
-    // If input year is less than current year, it's invalid
     if (fullInputYear < fullCurrentYear) {
       console.log("Year in past");
       return false;
@@ -132,20 +118,15 @@ const PaymentPage: React.FC = () => {
     return true;
   };
 
-  // Format expiry date as MM/YY
   const formatExpiryDate = (value: string) => {
-    // Remove all non-digit characters
     const v = value.replace(/\D/g, "");
 
-    // If empty, return empty string
     if (!v) return "";
 
-    // If length is 1, return as is
     if (v.length === 1) {
       return v;
     }
 
-    // If length is 2, check if first digit is > 1
     if (v.length === 2) {
       const firstDigit = parseInt(v[0]);
       if (firstDigit > 1) {
@@ -154,7 +135,6 @@ const PaymentPage: React.FC = () => {
       return `${v[0]}${v[1]}`;
     }
 
-    // If length is 3 or more, format as MM/YY
     return `${v.substring(0, 2)}/${v.substring(2, 4)}`;
   };
 
@@ -162,7 +142,6 @@ const PaymentPage: React.FC = () => {
     setLoading(true);
     try {
       const orderData: OrderRequest = {
-        // Add userId if user is logged in
         ...(userInfo && { userId: JSON.parse(userInfo).id }),
         customerInfo: {
           name: values.customerName,
@@ -177,7 +156,6 @@ const PaymentPage: React.FC = () => {
         })),
       };
 
-      // Add coupon code if provided
       if (values.couponCode) {
         orderData.couponCode = values.couponCode;
       }
@@ -187,9 +165,7 @@ const PaymentPage: React.FC = () => {
         orderData
       );
 
-      // Remove purchased items from cart
       if (userInfo) {
-        // If user is logged in, remove from both localStorage and database
         for (const item of selectedItems) {
           await cartService.removeFromCart(item.id);
         }
@@ -205,7 +181,6 @@ const PaymentPage: React.FC = () => {
         localStorage.setItem("cart_items", JSON.stringify(remainingItems));
       }
 
-      // Navigate to success page with order details
       navigate("/order-success", {
         state: {
           orderId: response.data.id,
@@ -219,7 +194,11 @@ const PaymentPage: React.FC = () => {
         },
       });
     } catch (error) {
-      message.error("Failed to place order. Please try again.");
+      if (axios.isAxiosError(error) && error.response?.data?.message) {
+        message.error(error.response.data.message);
+      } else {
+        message.error("Không đặt hàng được. Vui lòng thử lại.");
+      }
       console.error("Order error:", error);
     } finally {
       setLoading(false);
@@ -232,7 +211,7 @@ const PaymentPage: React.FC = () => {
       <Content className="flex-grow p-6 bg-gray-100">
         <div className="max-w-4xl mx-auto min-h-[703px]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card title="Payment Information" className="h-fit">
+            <Card title="Thông tin thanh toán" className="h-fit">
               <Form
                 form={form}
                 layout="vertical"
@@ -248,19 +227,19 @@ const PaymentPage: React.FC = () => {
               >
                 <Form.Item
                   name="paymentMethod"
-                  label="Payment Method"
+                  label="Phương thức thanh toán"
                   rules={[
                     {
                       required: true,
-                      message: "Please select payment method!",
+                      message: "Vui lòng chọn phương thức thanh toán!",
                     },
                   ]}
                 >
                   <Radio.Group
                     onChange={(e) => setPaymentMethod(e.target.value)}
                   >
-                    <Radio value="card">Credit Card</Radio>
-                    <Radio value="cod">Cash on Delivery</Radio>
+                    <Radio value="card">Thẻ tín dụng</Radio>
+                    <Radio value="cod">Thanh toán khi nhận hàng</Radio>
                   </Radio.Group>
                 </Form.Item>
 
@@ -268,15 +247,15 @@ const PaymentPage: React.FC = () => {
                   <>
                     <Form.Item
                       name="cardNumber"
-                      label="Card Number"
+                      label="Số thẻ"
                       rules={[
                         {
                           required: true,
-                          message: "Please input your card number!",
+                          message: "Vui lòng nhập số thẻ của bạn!",
                         },
                         {
                           pattern: /^(\d{4}\s){3}\d{4}$/,
-                          message: "Please enter a valid 16-digit card number!",
+                          message: "Vui lòng nhập số thẻ hợp lệ!",
                         },
                       ]}
                     >
@@ -293,11 +272,11 @@ const PaymentPage: React.FC = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <Form.Item
                         name="expiryDate"
-                        label="Expiry Date"
+                        label="Ngày hạn"
                         rules={[
                           {
                             required: true,
-                            message: "Please input expiry date!",
+                            message: "Vui lòng nhập ngày hạn!",
                           },
                           {
                             validator: (_, value) => {
@@ -309,7 +288,7 @@ const PaymentPage: React.FC = () => {
                               });
                               if (isValid) {
                                 return Promise.reject(
-                                  "Please enter a valid expiry date (MM/YY)!"
+                                  "Vui lòng nhập ngày hạn hợp lệ (MM/YY)!"
                                 );
                               }
                               return Promise.resolve();
@@ -335,8 +314,8 @@ const PaymentPage: React.FC = () => {
                         name="cvv"
                         label="CVV"
                         rules={[
-                          { required: true, message: "Please input CVV!" },
-                          { len: 3, message: "CVV must be 3 digits!" },
+                          { required: true, message: "Vui lòng nhập CVV!" },
+                          { len: 3, message: "CVV phải là 3 chữ số!" },
                         ]}
                       >
                         <Input.Password
@@ -349,73 +328,81 @@ const PaymentPage: React.FC = () => {
 
                     <Form.Item
                       name="name"
-                      label="Cardholder Name"
+                      label="Tên chủ thẻ"
                       rules={[
                         {
                           required: true,
-                          message: "Please input cardholder name!",
+                          message: "Vui lòng nhập tên chủ thẻ!",
                         },
                       ]}
                     >
-                      <Input placeholder="John Doe" />
+                      <Input placeholder="Be Trong Hieu" />
                     </Form.Item>
                   </>
                 )}
 
                 <div className="border-t pt-4">
                   <h3 className="text-lg font-medium mb-4">
-                    Customer Information
+                    Thông tin khách hàng
                   </h3>
                   <Form.Item
                     name="customerName"
-                    label="Full Name"
+                    label="Họ và tên"
                     rules={[
-                      { required: true, message: "Please input your name!" },
+                      { required: true, message: "Vui lòng nhập họ và tên!" },
                     ]}
                   >
-                    <Input placeholder="Enter your full name" />
+                    <Input placeholder="Bế Trọng Hiếu" />
                   </Form.Item>
 
                   <Form.Item
                     name="customerPhone"
-                    label="Phone Number"
+                    label="Số điện thoại"
                     rules={[
-                      { required: true, message: "Please input phone number!" },
+                      {
+                        required: true,
+                        message: "Vui lòng nhập số điện thoại!",
+                      },
                       {
                         pattern: /^[0-9]{10}$/,
-                        message: "Please enter a valid 10-digit phone number!",
+                        message: "Vui lòng nhập số điện thoại hợp lệ!",
                       },
                     ]}
                   >
-                    <Input placeholder="Enter phone number" maxLength={10} />
+                    <Input placeholder="0328058287" maxLength={10} />
                   </Form.Item>
 
                   <Form.Item
                     name="customerEmail"
                     label="Email"
                     rules={[
-                      { required: true, message: "Please input email!" },
-                      { type: "email", message: "Please enter a valid email!" },
+                      { required: true, message: "Vui lòng nhập email!" },
+                      {
+                        type: "email",
+                        message: "Vui lòng nhập email hợp lệ!",
+                      },
                     ]}
                   >
-                    <Input placeholder="Enter email address" />
+                    <Input placeholder="tronghieu@gmail.com" />
                   </Form.Item>
                 </div>
 
                 <div className="border-t pt-4">
-                  <h3 className="text-lg font-medium mb-4">Shipping Address</h3>
+                  <h3 className="text-lg font-medium mb-4">
+                    Địa chỉ giao hàng
+                  </h3>
                   <Form.Item
                     name="shippingAddress"
-                    label="Address"
+                    label="Địa chỉ"
                     rules={[
                       {
                         required: true,
-                        message: "Please input shipping address!",
+                        message: "Vui lòng nhập địa chỉ giao hàng!",
                       },
                     ]}
                   >
                     <Input.TextArea
-                      placeholder="Enter your full shipping address"
+                      placeholder="05 134/54 Cầu Diễn, Bắc Từ Liêm, Hà Nội"
                       rows={3}
                     />
                   </Form.Item>
@@ -423,20 +410,18 @@ const PaymentPage: React.FC = () => {
 
                 <Form.Item
                   name="couponCode"
-                  label="Coupon Code (Optional)"
+                  label="Mã giảm giá (Tùy chọn)"
                   rules={[
                     {
                       pattern: /^[A-Z0-9]+$/,
-                      message:
-                        "Coupon code must contain only uppercase letters and numbers!",
+                      message: "Mã giảm giá phải chứa chữ cái và số!",
                     },
                   ]}
                 >
                   <Input
-                    placeholder="Enter coupon code if you have one"
+                    placeholder="Nhập mã giảm giá nếu có"
                     maxLength={10}
                     onChange={(e) => {
-                      // Convert to uppercase
                       const upperValue = e.target.value.toUpperCase();
                       form.setFieldValue("couponCode", upperValue);
                     }}
@@ -449,12 +434,12 @@ const PaymentPage: React.FC = () => {
                   className="w-full"
                   loading={loading}
                 >
-                  {paymentMethod === "cod" ? "Place Order" : "Pay Now"}
+                  {paymentMethod === "cod" ? "Đặt hàng" : "Thanh toán"}
                 </Button>
               </Form>
             </Card>
 
-            <Card title="Order Summary" className="h-fit">
+            <Card title="Tóm tắt đơn hàng" className="h-fit">
               <div className="space-y-4">
                 {selectedItems.map((item) => (
                   <div
@@ -470,20 +455,20 @@ const PaymentPage: React.FC = () => {
                       <div>
                         <p className="font-medium">{item.name}</p>
                         <p className="text-gray-500">
-                          {item.quantity} x ${item.price.toFixed(2)}
+                          {item.quantity} x {item.price.toLocaleString()} VND
                         </p>
                       </div>
                     </div>
                     <p className="font-medium">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      {(item.price * item.quantity).toLocaleString()} VND
                     </p>
                   </div>
                 ))}
 
                 <div className="border-t pt-4">
                   <div className="flex justify-between font-semibold text-lg">
-                    <span>Total ({selectedItems.length} items)</span>
-                    <span>${totalPrice.toFixed(2)}</span>
+                    <span>Tổng cộng ({selectedItems.length} sản phẩm)</span>
+                    <span>{totalPrice.toLocaleString()} VND</span>
                   </div>
                 </div>
               </div>

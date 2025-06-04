@@ -68,14 +68,13 @@ const ProductsPage: React.FC = () => {
   const [activeFilters, setActiveFilters] = useState<FilterState>({
     categories: [],
     brands: [],
-    priceRange: [0, 5000],
+    priceRange: [0, 50000000],
     rating: undefined,
   });
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<string>("featured");
 
-  // Fetch brands and product types
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -104,20 +103,17 @@ const ProductsPage: React.FC = () => {
       setLoading(true);
       const params = new URLSearchParams();
 
-      // Add search query
       if (searchQuery) {
         params.append("search", searchQuery);
       }
 
-      // Add price range
       if (activeFilters.priceRange[0] > 0) {
         params.append("minPrice", activeFilters.priceRange[0].toString());
       }
-      if (activeFilters.priceRange[1] < 5000) {
+      if (activeFilters.priceRange[1] < 50000000) {
         params.append("maxPrice", activeFilters.priceRange[1].toString());
       }
 
-      // Add category and brand filters
       if (activeFilters.categories.length > 0) {
         activeFilters.categories.forEach((category) => {
           params.append("typeId", category);
@@ -129,12 +125,10 @@ const ProductsPage: React.FC = () => {
         });
       }
 
-      // Add rating filter
       if (activeFilters.rating) {
         params.append("minRating", activeFilters.rating.toString());
       }
 
-      // Add sort parameter
       params.append("sort", sortBy);
 
       const response = await api.getProducts(params);
@@ -146,16 +140,14 @@ const ProductsPage: React.FC = () => {
     }
   };
 
-  // Fetch products when filters or search query changes
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       fetchProducts();
-    }, 500); // 500ms delay
+    }, 500);
 
     return () => clearTimeout(timeoutId);
   }, [searchQuery, activeFilters]);
 
-  // Get search parameters from URL
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const query = searchParams.get("search") || "";
@@ -165,7 +157,7 @@ const ProductsPage: React.FC = () => {
     const brands = searchParams.get("brands")?.split(",") || [];
     const priceRange = [
       Number(searchParams.get("minPrice")) || 0,
-      Number(searchParams.get("maxPrice")) || 5000,
+      Number(searchParams.get("maxPrice")) || 50000000,
     ] as [number, number];
     const rating = searchParams.get("minRating")
       ? Number(searchParams.get("minRating"))
@@ -189,7 +181,6 @@ const ProductsPage: React.FC = () => {
     const newFilters = { ...activeFilters, [type]: value };
     setActiveFilters(newFilters);
 
-    // Update URL with new filters
     const searchParams = new URLSearchParams();
     if (searchQuery) searchParams.set("search", searchQuery);
     if (newFilters.categories.length)
@@ -198,7 +189,7 @@ const ProductsPage: React.FC = () => {
       searchParams.set("brands", newFilters.brands.join(","));
     if (newFilters.priceRange[0] > 0)
       searchParams.set("minPrice", newFilters.priceRange[0].toString());
-    if (newFilters.priceRange[1] < 5000)
+    if (newFilters.priceRange[1] < 50000000)
       searchParams.set("maxPrice", newFilters.priceRange[1].toString());
     if (newFilters.rating)
       searchParams.set("minRating", newFilters.rating.toString());
@@ -215,7 +206,7 @@ const ProductsPage: React.FC = () => {
           <Col span={6}>
             <div className="filters-section bg-white p-4 rounded-lg shadow-sm">
               <div className="flex justify-between items-center mb-4">
-                <Title level={4}>Filters</Title>
+                <Title level={4}>Bộ lọc</Title>
                 <Button
                   type="text"
                   icon={showFilters ? <UpOutlined /> : <DownOutlined />}
@@ -227,7 +218,7 @@ const ProductsPage: React.FC = () => {
                 <div className="space-y-6">
                   {/* Categories */}
                   <div>
-                    <Text strong>Categories</Text>
+                    <Text strong>Danh mục</Text>
                     <div className="mt-2">
                       <Checkbox.Group
                         className="flex flex-col space-y-2"
@@ -247,7 +238,7 @@ const ProductsPage: React.FC = () => {
 
                   {/* Brands */}
                   <div>
-                    <Text strong>Brands</Text>
+                    <Text strong>Thương hiệu</Text>
                     <div className="mt-2">
                       <Checkbox.Group
                         className="flex flex-col space-y-2"
@@ -267,13 +258,13 @@ const ProductsPage: React.FC = () => {
 
                   {/* Price Range */}
                   <div>
-                    <Text strong>Price Range</Text>
+                    <Text strong>Khoảng giá</Text>
                     <div className="mt-2">
                       <div className="flex items-center space-x-2 mb-2">
                         <Slider
                           range
                           min={0}
-                          max={5000}
+                          max={50000000}
                           value={activeFilters.priceRange}
                           onChange={(value) =>
                             handleFilterChange(
@@ -285,15 +276,19 @@ const ProductsPage: React.FC = () => {
                         />
                       </div>
                       <div className="flex justify-between text-xs text-gray-500">
-                        <span>${activeFilters.priceRange[0]}</span>
-                        <span>${activeFilters.priceRange[1]}</span>
+                        <span>
+                          {activeFilters.priceRange[0].toLocaleString()} VND
+                        </span>
+                        <span>
+                          {activeFilters.priceRange[1].toLocaleString()} VND
+                        </span>
                       </div>
                     </div>
                   </div>
 
                   {/* Rating */}
                   <div>
-                    <Text strong>Rating</Text>
+                    <Text strong>Đánh giá</Text>
                     <div className="mt-2">
                       <div className="flex items-center space-x-2 mb-2">
                         <Slider
@@ -330,25 +325,25 @@ const ProductsPage: React.FC = () => {
               <div className="flex justify-between items-center mb-6">
                 <Title level={3}>
                   {searchQuery
-                    ? `Search results for: "${searchQuery}"`
-                    : "All Products"}
+                    ? `Kết quả tìm kiếm: "${searchQuery}"`
+                    : "Tất cả sản phẩm"}
                   <Text type="secondary" className="ml-2">
-                    ({products.length} products)
+                    ({products.length} sản phẩm)
                   </Text>
                 </Title>
                 <div className="flex items-center space-x-4">
-                  <Text>Sort by:</Text>
+                  <Text>Sắp xếp theo:</Text>
                   <Select
                     value={sortBy}
                     onChange={handleSortChange}
                     style={{ width: 200 }}
                   >
-                    <Option value="featured">Featured</Option>
-                    <Option value="price_low">Price: Low to High</Option>
-                    <Option value="price_high">Price: High to Low</Option>
-                    <Option value="rating">Rating</Option>
-                    <Option value="newest">Newest</Option>
-                    <Option value="best_seller">Best Seller</Option>
+                    <Option value="featured">Mặc định</Option>
+                    <Option value="price_low">Giá: Thấp đến cao</Option>
+                    <Option value="price_high">Giá: Cao đến thấp</Option>
+                    <Option value="rating">Đánh giá</Option>
+                    <Option value="newest">Mới nhất</Option>
+                    <Option value="best_seller">Bán chạy nhất</Option>
                   </Select>
                 </div>
               </div>

@@ -77,14 +77,12 @@ const AdminDashboard: React.FC = () => {
   const [orderLoading, setOrderLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Check admin access
   const checkAdminAccess = useCallback(() => {
     const userData = localStorage.getItem("user");
     if (userData) {
       try {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
-        // Chuẩn hóa: kiểm tra quyền dựa trên role, typeRole hoặc keyRole
         const role =
           parsedUser.role || parsedUser.typeRole || parsedUser.keyRole;
         if (role !== "admin") {
@@ -101,7 +99,6 @@ const AdminDashboard: React.FC = () => {
     }
   }, [navigate]);
 
-  // Fetch dashboard data and orders
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
@@ -158,12 +155,12 @@ const AdminDashboard: React.FC = () => {
 
   const orderColumns = [
     {
-      title: "Order ID",
+      title: "ID",
       dataIndex: "id",
       key: "id",
     },
     {
-      title: "Customer",
+      title: "Khách hàng",
       dataIndex: "customerInfo",
       key: "customerInfo",
       render: (customerInfo: CustomerInfo) => (
@@ -175,13 +172,13 @@ const AdminDashboard: React.FC = () => {
       ),
     },
     {
-      title: "Total Amount",
+      title: "Tổng tiền",
       dataIndex: "totalAmount",
       key: "totalAmount",
-      render: (amount: number) => `$${amount.toFixed(2)}`,
+      render: (amount: number) => `${amount.toLocaleString()} VND`,
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       key: "status",
       render: (status: string) => (
@@ -191,36 +188,37 @@ const AdminDashboard: React.FC = () => {
       ),
     },
     {
-      title: "Payment Method",
+      title: "Phương thức thanh toán",
       dataIndex: "paymentMethod",
       key: "paymentMethod",
       render: (method: string) => method.toUpperCase(),
     },
     {
-      title: "Created At",
+      title: "Ngày tạo",
       dataIndex: "createdAt",
       key: "createdAt",
       render: (date: string) => new Date(date).toLocaleString(),
     },
     {
-      title: "Items",
+      title: "Sản phẩm",
       key: "items",
       render: (record: Order) => (
         <div>
           {record.items.map((item: OrderItem) => (
             <div key={item.productId}>
-              {item.productName} - Qty: {item.quantity} - ${item.price}
+              {item.productName} - Qty: {item.quantity} -{" "}
+              {item.price.toLocaleString()} VND
             </div>
           ))}
         </div>
       ),
     },
     {
-      title: "Actions",
+      title: "Hành động",
       key: "actions",
       render: (_: unknown, record: Order) => (
         <Button type="link" onClick={() => handleViewOrder(record.id)}>
-          View Details
+          Xem chi tiết
         </Button>
       ),
     },
@@ -262,7 +260,7 @@ const AdminDashboard: React.FC = () => {
                 <Col xs={24} sm={12} md={8}>
                   <Card>
                     <Statistic
-                      title="Total Users"
+                      title="Tổng số người dùng"
                       value={dashboardData?.totalUsers || 0}
                       prefix={<UserOutlined />}
                       valueStyle={{ color: "#1890ff" }}
@@ -272,7 +270,7 @@ const AdminDashboard: React.FC = () => {
                 <Col xs={24} sm={12} md={8}>
                   <Card>
                     <Statistic
-                      title="Total Orders"
+                      title="Tổng đơn hàng"
                       value={dashboardData?.totalOrders || 0}
                       prefix={<ShoppingCartOutlined />}
                       valueStyle={{ color: "#52c41a" }}
@@ -282,11 +280,13 @@ const AdminDashboard: React.FC = () => {
                 <Col xs={24} sm={12} md={8}>
                   <Card>
                     <Statistic
-                      title="Total Revenue"
+                      title="Tổng doanh thu"
                       value={dashboardData?.totalRevenue || 0}
                       prefix={<DollarOutlined />}
                       valueStyle={{ color: "#722ed1" }}
-                      formatter={(value) => `$${Number(value).toFixed(2)}`}
+                      formatter={(value) =>
+                        `${Number(value).toLocaleString()} VND`
+                      }
                     />
                   </Card>
                 </Col>
@@ -295,7 +295,7 @@ const AdminDashboard: React.FC = () => {
                 <Col xs={24} sm={12} md={8}>
                   <Card>
                     <Statistic
-                      title="Total Products"
+                      title="Tổng sản phẩm"
                       value={dashboardData?.totalProducts || 0}
                       prefix={<ProductOutlined />}
                       valueStyle={{ color: "#faad14" }}
@@ -305,7 +305,7 @@ const AdminDashboard: React.FC = () => {
                 <Col xs={24} sm={12} md={8}>
                   <Card>
                     <Statistic
-                      title="Total Reviews"
+                      title="Tổng đánh giá"
                       value={dashboardData?.totalReviews || 0}
                       valueStyle={{ color: "#eb2f96" }}
                     />
@@ -314,7 +314,7 @@ const AdminDashboard: React.FC = () => {
                 <Col xs={24} sm={12} md={8}>
                   <Card>
                     <Statistic
-                      title="Total Product Types"
+                      title="Tổng loại sản phẩm"
                       value={dashboardData?.totalProductTypes || 0}
                       valueStyle={{ color: "#13c2c2" }}
                     />
@@ -326,7 +326,7 @@ const AdminDashboard: React.FC = () => {
 
           {/* Orders Table */}
           {!loading && !error && (
-            <Card title="All Orders" className="mb-8">
+            <Card title="Tất cả đơn hàng" className="mb-8">
               <Table
                 columns={orderColumns}
                 dataSource={orders}
@@ -346,7 +346,7 @@ const AdminDashboard: React.FC = () => {
                   block
                   onClick={() => navigate("/admin/users")}
                 >
-                  Manage Users
+                  Quản lý người dùng
                 </Button>
               </Col>
               <Col xs={24} sm={12} md={6}>
@@ -355,7 +355,7 @@ const AdminDashboard: React.FC = () => {
                   block
                   onClick={() => navigate("/admin/products")}
                 >
-                  Manage Products
+                  Quản lý sản phẩm
                 </Button>
               </Col>
               <Col xs={24} sm={12} md={6}>
@@ -364,7 +364,7 @@ const AdminDashboard: React.FC = () => {
                   block
                   onClick={() => navigate("/admin/orders")}
                 >
-                  Manage Orders
+                  Quản lý đơn hàng
                 </Button>
               </Col>
               <Col xs={24} sm={12} md={6}>
@@ -373,7 +373,7 @@ const AdminDashboard: React.FC = () => {
                   block
                   onClick={() => navigate("/admin/categories")}
                 >
-                  Manage Categories
+                  Quản lý danh mục
                 </Button>
               </Col>
             </Row>
@@ -381,79 +381,81 @@ const AdminDashboard: React.FC = () => {
 
           {/* Order Details Modal */}
           <Modal
-            title="Order Details"
+            title="Chi tiết đơn hàng"
             open={orderModalVisible}
             onCancel={handleCloseOrderModal}
             footer={null}
             width={1200}
           >
             {orderLoading ? (
-              <Spin tip="Loading order details..." />
+              <Spin tip="Đang tải thông tin chi tiết đơn hàng." />
             ) : selectedOrder ? (
               <Descriptions bordered column={1}>
-                <Descriptions.Item label="Order ID">
+                <Descriptions.Item label="Mã đơn hàng">
                   {selectedOrder.id}
                 </Descriptions.Item>
-                <Descriptions.Item label="Customer Information">
+                <Descriptions.Item label="Thông tin khách hàng">
                   <div>
-                    <div>Name: {selectedOrder.customerInfo.name}</div>
+                    <div>Tên: {selectedOrder.customerInfo.name}</div>
                     <div>Email: {selectedOrder.customerInfo.email}</div>
-                    <div>Phone: {selectedOrder.customerInfo.phone}</div>
+                    <div>SĐT: {selectedOrder.customerInfo.phone}</div>
                   </div>
                 </Descriptions.Item>
-                <Descriptions.Item label="Shipping Address">
+                <Descriptions.Item label="Địa chỉ giao hàng">
                   {selectedOrder.shippingAddress.replace(/"/g, "")}
                 </Descriptions.Item>
-                <Descriptions.Item label="Payment Method">
+                <Descriptions.Item label="Phương thức thanh toán">
                   {selectedOrder.paymentMethod.toUpperCase()}
                 </Descriptions.Item>
-                <Descriptions.Item label="Total Amount">
-                  ${selectedOrder.totalAmount.toFixed(2)}
+                <Descriptions.Item label="Tổng tiền">
+                  {selectedOrder.totalAmount.toLocaleString()} VND
                 </Descriptions.Item>
-                <Descriptions.Item label="Status">
+                <Descriptions.Item label="Trạng thái">
                   <Tag color={getStatusColor(selectedOrder.status)}>
                     {selectedOrder.status.charAt(0).toUpperCase() +
                       selectedOrder.status.slice(1)}
                   </Tag>
                 </Descriptions.Item>
-                <Descriptions.Item label="Created At">
+                <Descriptions.Item label="Ngày tạo">
                   {new Date(selectedOrder.createdAt).toLocaleString()}
                 </Descriptions.Item>
-                <Descriptions.Item label="Updated At">
+                <Descriptions.Item label="Ngày cập nhật">
                   {new Date(selectedOrder.updatedAt).toLocaleString()}
                 </Descriptions.Item>
-                <Descriptions.Item label="Order Items">
+                <Descriptions.Item label="Sản phẩm">
                   <Table
                     dataSource={selectedOrder.items}
                     rowKey="productId"
                     pagination={false}
                     columns={[
                       {
-                        title: "Product Name",
+                        title: "Tên sản phẩm",
                         dataIndex: "productName",
                         key: "productName",
                       },
                       {
-                        title: "Product Type",
+                        title: "Loại sản phẩm",
                         dataIndex: "productType",
                         key: "productType",
                       },
                       {
-                        title: "Quantity",
+                        title: "Số lượng",
                         dataIndex: "quantity",
                         key: "quantity",
                       },
                       {
-                        title: "Price",
+                        title: "Giá",
                         dataIndex: "price",
                         key: "price",
-                        render: (price: number) => `$${price.toFixed(2)}`,
+                        render: (price: number) =>
+                          `${price.toLocaleString()} VND`,
                       },
                       {
-                        title: "Total",
+                        title: "Tổng tiền",
                         dataIndex: "total",
                         key: "total",
-                        render: (total: number) => `$${total.toFixed(2)}`,
+                        render: (total: number) =>
+                          `${total.toLocaleString()} VND`,
                       },
                     ]}
                   />

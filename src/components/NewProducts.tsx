@@ -97,7 +97,6 @@ const NewProducts: React.FC = () => {
     fetchProducts();
   }, []);
 
-  // Listen for wishlist changes
   useEffect(() => {
     const updateWishlist = () => {
       const wishlist = wishlistService.getWishlist();
@@ -109,7 +108,6 @@ const NewProducts: React.FC = () => {
     return () => window.removeEventListener("storage", updateWishlist);
   }, []);
 
-  // Listen for cart changes
   useEffect(() => {
     const updateCart = async () => {
       try {
@@ -145,7 +143,7 @@ const NewProducts: React.FC = () => {
     e.stopPropagation();
     if (wishlistService.isInWishlist(product.id)) {
       wishlistService.removeFromWishlist(product.id);
-      message.success("Removed from wishlist!");
+      message.success("Đã xóa khỏi danh sách yêu thích!");
     } else {
       const wishlistItem = {
         id: product.id,
@@ -155,7 +153,7 @@ const NewProducts: React.FC = () => {
         rating: product.rating,
       };
       wishlistService.addToWishlist(wishlistItem);
-      message.success("Added to wishlist!");
+      message.success("Đã thêm vào danh sách yêu thích!");
     }
     const updatedWishlist = wishlistService.getWishlist();
     setWishlistItems(updatedWishlist.map((item) => item.id));
@@ -173,18 +171,16 @@ const NewProducts: React.FC = () => {
         quantity: 1,
       };
       const updatedCart = await cartService.addToCart(cartItem);
-      message.success("Added to cart!");
-      // Update cart items state
+      message.success("Đã thêm vào giỏ hàng!");
       const items: { [key: number]: number } = {};
       updatedCart.forEach((item) => {
         items[item.id] = item.quantity;
       });
       setCartItems(items);
-      // Trigger storage event to update other components
       window.dispatchEvent(new Event("storage"));
     } catch (error) {
-      console.error("Error adding to cart:", error);
-      message.error("Failed to add item to cart");
+      console.error("Lỗi thêm vào giỏ hàng:", error);
+      message.error("Không thể thêm sản phẩm vào giỏ hàng");
     }
   };
 
@@ -208,14 +204,14 @@ const NewProducts: React.FC = () => {
           level={2}
           className="!mb-0 !mr-2 !text-[#0a174e] font-bold"
         >
-          New Products
+          Sản phẩm mới
         </Typography.Title>
         <Button
           type="link"
           className="!text-gray-500 flex items-center"
           onClick={() => navigate("/products?sort=newest")}
         >
-          See More <span>&rarr;</span>
+          Xem thêm <span>&rarr;</span>
         </Button>
       </div>
       <div className="w-full px-14 relative">
@@ -323,11 +319,11 @@ const NewProducts: React.FC = () => {
                 )}
                 <div className="flex items-end gap-2 mt-1">
                   <span className="text-2xl font-bold text-[#222]">
-                    ${p.price.toLocaleString()}
+                    {p.price.toLocaleString()} VND
                   </span>
                   {p.oldPrice && (
                     <span className="text-sm line-through text-gray-400">
-                      ${p.oldPrice.toLocaleString()}
+                      {p.oldPrice.toLocaleString()} VND
                     </span>
                   )}
                 </div>

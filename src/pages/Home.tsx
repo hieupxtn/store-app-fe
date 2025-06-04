@@ -10,8 +10,6 @@ import NewProducts from "../components/NewProducts";
 import BestSeller from "../components/BestSeller";
 import { api } from "../services/api";
 import { useNavigate } from "react-router-dom";
-// import CustomCarousel from "../common/BaseCarousel";
-// import ShopPage from "../components/ShopPage";
 
 interface Product {
   id: number;
@@ -45,7 +43,7 @@ const HomePage: React.FC = () => {
     { name: "Laptops", image: "/images/laptop.png", type: 2 },
     { name: "Smartphones", image: "/images/smartphone.png", type: 1 },
     { name: "Gear", image: "/images/gear.png", type: 4 },
-    { name: "Components", image: "/images/pc.png", type: 7 },
+    { name: "Phụ kiện", image: "/images/pc.png", type: 7 },
   ];
 
   const handleProductTypeClick = (type: number) => {
@@ -76,7 +74,7 @@ const HomePage: React.FC = () => {
             level={1}
             className="!text-[#803535] font-semibold hover:!text-[#bb8570]"
           >
-            Latest Technology at Your Fingertips
+            Công nghệ mới nhất trong tầm tay
           </Title>
         </div>
 
@@ -111,7 +109,7 @@ const HomePage: React.FC = () => {
                 level={2}
                 className="!text-[#803535] !mb-0 hover:!text-[#bb8570]"
               >
-                Featured Products
+                Sản phẩm nổi bật
               </Title>
             </Button>
           </div>
@@ -127,7 +125,7 @@ const HomePage: React.FC = () => {
               level={2}
               className="!text-[#803535] !mb-0 hover:!text-[#bb8570]"
             >
-              See More <span>&rarr;</span>
+              Xem thêm <span>&rarr;</span>
             </Title>
           </Button>
         </div>

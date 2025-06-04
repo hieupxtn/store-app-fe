@@ -83,14 +83,14 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
       image: product.image,
     };
     cartService.addToCart(cartItem);
-    message.success(`${product.productName} added to cart!`);
+    message.success(`${product.productName} đã được thêm vào giỏ hàng!`);
   };
 
   const handleWishlistToggle = () => {
     if (!product) return;
     if (isInWishlist) {
       wishlistService.removeFromWishlist(product.id);
-      message.success("Removed from wishlist!");
+      message.success("Đã xóa khỏi danh sách yêu thích!");
     } else {
       const wishlistItem = {
         id: product.id,
@@ -100,7 +100,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
         rating: product.rating,
       };
       wishlistService.addToWishlist(wishlistItem);
-      message.success("Added to wishlist!");
+      message.success("Đã thêm vào danh sách yêu thích!");
     }
     setIsInWishlist(!isInWishlist);
   };
@@ -116,7 +116,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
   if (!product) {
     return (
       <div className="flex justify-center items-center h-[500px]">
-        <Text>Product not found</Text>
+        <Text>Không tìm thấy sản phẩm</Text>
       </div>
     );
   }
@@ -141,7 +141,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                   defaultValue={product.rating}
                   className="text-yellow-500"
                 />
-                <Text type="secondary">({product.rating} rating)</Text>
+                <Text type="secondary">({product.rating} Đánh giá)</Text>
               </div>
               <Title level={3} className="text-blue-600 mb-4">
                 {product.price.toLocaleString("vi-VN")} VND
@@ -155,7 +155,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
 
             <div className="space-y-4">
               <div className="flex items-center gap-4">
-                <Text strong>Quantity:</Text>
+                <Text strong>Số lượng:</Text>
                 <InputNumber
                   min={1}
                   max={Math.min(product.quantity, product.quantityLimit)}
@@ -163,7 +163,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                   onChange={(value) => setQuantity(value || 1)}
                   className="w-24"
                 />
-                <Text type="secondary">{product.quantity} available</Text>
+                <Text type="secondary">{product.quantity} sản phẩm có sẵn</Text>
               </div>
 
               <div className="flex gap-4">
@@ -174,7 +174,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                   className="flex-1"
                   onClick={handleAddToCart}
                 >
-                  Add to Cart
+                  Thêm vào giỏ
                 </Button>
                 <Button
                   size="large"
@@ -188,14 +188,14 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                   className="flex-1"
                   onClick={handleWishlistToggle}
                 >
-                  Wishlist
+                  Yêu thích
                 </Button>
                 <Button
                   size="large"
                   icon={<ShareAltOutlined />}
                   className="flex-1"
                 >
-                  Share
+                  Chia sẻ
                 </Button>
               </div>
             </div>

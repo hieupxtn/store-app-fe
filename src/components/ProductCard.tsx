@@ -41,12 +41,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         image: product.image,
       };
       await cartService.addToCart(cartItem);
-      message.success(`${product.productName} added to cart!`);
-      // Trigger storage event to update cart count in AppHeader
+      message.success(`${product.productName} đã được thêm vào giỏ hàng!`);
       window.dispatchEvent(new Event("storage"));
     } catch (error) {
-      console.error("Error adding to cart:", error);
-      message.error("Failed to add item to cart");
+      console.error("Lỗi thêm vào giỏ hàng:", error);
+      message.error("Không thể thêm sản phẩm vào giỏ hàng");
     } finally {
       setIsAddingToCart(false);
     }
@@ -55,7 +54,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const handleWishlistToggle = () => {
     if (isInWishlist) {
       wishlistService.removeFromWishlist(product.id);
-      message.success("Removed from wishlist!");
+      message.success("Đã xóa khỏi danh sách yêu thích!");
     } else {
       const wishlistItem = {
         id: product.id,
@@ -65,10 +64,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         rating: product.rating,
       };
       wishlistService.addToWishlist(wishlistItem);
-      message.success("Added to wishlist!");
+      message.success("Đã thêm vào danh sách yêu thích!");
     }
     setIsInWishlist(!isInWishlist);
-    // Trigger storage event to update wishlist count in AppHeader
     window.dispatchEvent(new Event("storage"));
   };
 
@@ -85,7 +83,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       }
     >
       <h3 className="text-lg font-semibold">{product.productName}</h3>
-      <p className="text-gray-500">${product.price.toFixed(2)}</p>
+      <p className="text-gray-500">{product.price.toLocaleString()} VND</p>
       <div className="flex gap-2 mt-2">
         <Button
           type="primary"
@@ -94,7 +92,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           onClick={handleAddToCart}
           loading={isAddingToCart}
         >
-          Add to Cart
+          Thêm vào giỏ hàng
         </Button>
         <Button
           type={isInWishlist ? "primary" : "default"}

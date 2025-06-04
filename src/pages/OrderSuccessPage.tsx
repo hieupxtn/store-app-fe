@@ -47,25 +47,26 @@ const OrderSuccessPage: React.FC = () => {
             <Space direction="vertical" size="large" className="w-full">
               <CheckCircleFilled style={{ fontSize: 64, color: "#52c41a" }} />
 
-              <Title level={2}>Order Placed Successfully!</Title>
-              <Text type="secondary">Thank you for your purchase</Text>
+              <Title level={2}>Đặt hàng thành công!</Title>
+              <Text type="secondary">Cảm ơn bạn đã mua hàng</Text>
 
               <Divider />
 
               <div className="text-left">
-                <Title level={4}>Order Details</Title>
+                <Title level={4}>Chi tiết đơn hàng</Title>
                 <div className="space-y-2">
                   <Text>
-                    <strong>Order ID:</strong> #{orderId}
+                    <strong>Mã đơn hàng:</strong> #{orderId}
                   </Text>
                   <br />
                   <Text>
-                    <strong>Customer Name:</strong>{" "}
+                    <strong>Tên khách hàng:</strong>{" "}
                     {orderDetails.customerInfo.name}
                   </Text>
                   <br />
                   <Text>
-                    <strong>Phone:</strong> {orderDetails.customerInfo.phone}
+                    <strong>Số điện thoại:</strong>{" "}
+                    {orderDetails.customerInfo.phone}
                   </Text>
                   <br />
                   <Text>
@@ -73,19 +74,19 @@ const OrderSuccessPage: React.FC = () => {
                   </Text>
                   <br />
                   <Text>
-                    <strong>Shipping Address:</strong>{" "}
+                    <strong>Địa chỉ giao hàng:</strong>{" "}
                     {orderDetails.shippingAddress}
                   </Text>
                   <br />
                   <Text>
-                    <strong>Payment Method:</strong>{" "}
+                    <strong>Phương thức thanh toán:</strong>{" "}
                     {orderDetails.paymentMethod}
                   </Text>
                 </div>
 
                 <Divider />
 
-                <Title level={4}>Order Items</Title>
+                <Title level={4}>Sản phẩm đã đặt</Title>
                 <div className="space-y-4">
                   {orderDetails.items.map((item) => (
                     <div
@@ -102,12 +103,12 @@ const OrderSuccessPage: React.FC = () => {
                           <Text strong>{item.name}</Text>
                           <br />
                           <Text type="secondary">
-                            Quantity: {item.quantity}
+                            Số lượng: {item.quantity}
                           </Text>
                         </div>
                       </div>
                       <Text strong>
-                        ${(item.price * item.quantity).toFixed(2)}
+                        {(item.price * item.quantity).toLocaleString()} VND
                       </Text>
                     </div>
                   ))}
@@ -116,9 +117,9 @@ const OrderSuccessPage: React.FC = () => {
                 <Divider />
 
                 <div className="flex justify-between items-center">
-                  <Text strong>Total Amount:</Text>
+                  <Text strong>Tổng tiền:</Text>
                   <Text strong className="text-lg">
-                    ${orderDetails.totalAmount.toFixed(2)}
+                    {orderDetails.totalAmount.toLocaleString()} VND
                   </Text>
                 </div>
               </div>
@@ -129,13 +130,13 @@ const OrderSuccessPage: React.FC = () => {
                   icon={<HomeOutlined />}
                   onClick={() => navigate("/")}
                 >
-                  Back to Home
+                  Về trang chủ
                 </Button>
                 <Button
                   icon={<ShoppingOutlined />}
                   onClick={() => navigate("/products")}
                 >
-                  Continue Shopping
+                  Tiếp tục mua sắm
                 </Button>
               </Space>
             </Space>

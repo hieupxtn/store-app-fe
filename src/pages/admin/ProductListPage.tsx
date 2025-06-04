@@ -60,15 +60,15 @@ const ProductListPage: React.FC = () => {
   const getProductTypeName = (type: number) => {
     switch (type) {
       case 1:
-        return "Smartphone";
+        return "Điện thoại";
       case 2:
         return "Laptop";
       case 3:
-        return "Accessories";
+        return "Phụ kiện";
       case 4:
-        return "Tablet";
+        return "Máy tính bảng";
       default:
-        return "Unknown";
+        return "Không xác định";
     }
   };
 
@@ -80,7 +80,7 @@ const ProductListPage: React.FC = () => {
       width: 80,
     },
     {
-      title: "Image",
+      title: "Hình ảnh",
       dataIndex: "image",
       key: "image",
       render: (image: string) => (
@@ -94,12 +94,12 @@ const ProductListPage: React.FC = () => {
       ),
     },
     {
-      title: "Name",
+      title: "Tên",
       dataIndex: "productName",
       key: "productName",
     },
     {
-      title: "Type",
+      title: "Loại",
       dataIndex: "productType",
       key: "productType",
       render: (type: number) => (
@@ -107,13 +107,13 @@ const ProductListPage: React.FC = () => {
       ),
     },
     {
-      title: "Price",
+      title: "Giá",
       dataIndex: "price",
       key: "price",
-      render: (price: number) => `$${price ? price.toLocaleString() : 0}`,
+      render: (price: number) => `${price ? price.toLocaleString() : 0} VND`,
     },
     {
-      title: "Quantity",
+      title: "Số lượng",
       dataIndex: "quantity",
       key: "quantity",
       render: (quantity: number) => (
@@ -121,7 +121,7 @@ const ProductListPage: React.FC = () => {
       ),
     },
     {
-      title: "Rating",
+      title: "Đánh giá",
       dataIndex: "rating",
       key: "rating",
       render: (rating: number) => (
@@ -129,35 +129,35 @@ const ProductListPage: React.FC = () => {
       ),
     },
     {
-      title: "Description",
+      title: "Mô tả",
       dataIndex: "description",
       key: "description",
       ellipsis: true,
     },
     {
-      title: "Created At",
+      title: "Ngày tạo",
       dataIndex: "createdAt",
       key: "createdAt",
       render: (date: string | null) =>
-        date ? new Date(date).toLocaleString() : "Not specified",
+        date ? new Date(date).toLocaleString() : "Chưa cập nhật",
     },
     {
-      title: "Actions",
+      title: "Hành động",
       key: "actions",
       render: (_: unknown, record: Product) => (
         <Space>
           <Button type="link" onClick={() => handleViewProduct(record.id)}>
-            View
+            Xem
           </Button>
           <Button type="link" onClick={() => handleEditProduct(record.id)}>
-            Edit
+            Sửa
           </Button>
           <Button
             type="link"
             danger
             onClick={() => handleDeleteProduct(record.id)}
           >
-            Delete
+            Xóa
           </Button>
         </Space>
       ),
@@ -221,7 +221,6 @@ const ProductListPage: React.FC = () => {
       setLoading(true);
       await api.deleteProduct(productToDelete);
       message.success("Product deleted successfully");
-      // Refresh the product list
       const response = await api.getAllProducts();
       setProducts(response.products);
     } catch (error) {
@@ -242,7 +241,6 @@ const ProductListPage: React.FC = () => {
       await api.updateProduct(selectedProduct.id, values);
       message.success("Product updated successfully");
       setIsEditModalVisible(false);
-      // Refresh the product list
       const productsResponse = await api.getAllProducts();
       setProducts(productsResponse.products);
     } catch (error) {
@@ -260,7 +258,6 @@ const ProductListPage: React.FC = () => {
       message.success("Product created successfully");
       setIsCreateModalVisible(false);
       createForm.resetFields();
-      // Refresh the product list
       const productsResponse = await api.getAllProducts();
       setProducts(productsResponse.products);
     } catch (error) {
@@ -277,16 +274,16 @@ const ProductListPage: React.FC = () => {
       <Content className="flex-grow bg-gray-100">
         <div className="w-full px-4 py-8 min-h-[751px]">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">Product Management</h1>
+            <h1 className="text-2xl font-bold">Quản lý sản phẩm</h1>
             <Space>
               <Button
                 type="primary"
                 onClick={() => setIsCreateModalVisible(true)}
               >
-                Add New Product
+                Thêm sản phẩm mới
               </Button>
               <Button onClick={() => navigate("/admin")}>
-                Back to Dashboard
+                Quay lại Dashboard
               </Button>
             </Space>
           </div>
@@ -311,12 +308,12 @@ const ProductListPage: React.FC = () => {
 
           {/* View Product Modal */}
           <Modal
-            title="Product Details"
+            title="Chi tiết sản phẩm"
             open={isViewModalVisible}
             onCancel={() => setIsViewModalVisible(false)}
             footer={[
               <Button key="close" onClick={() => setIsViewModalVisible(false)}>
-                Close
+                Đóng
               </Button>,
             ]}
           >
@@ -332,31 +329,31 @@ const ProductListPage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <h3 className="font-bold">Product Name:</h3>
+                  <h3 className="font-bold">Tên sản phẩm:</h3>
                   <p>{selectedProduct.productName}</p>
                 </div>
                 <div>
-                  <h3 className="font-bold">Type:</h3>
+                  <h3 className="font-bold">Loại:</h3>
                   <p>{getProductTypeName(selectedProduct.productType)}</p>
                 </div>
                 <div>
-                  <h3 className="font-bold">Price:</h3>
-                  <p>${selectedProduct.price.toLocaleString()}</p>
+                  <h3 className="font-bold">Giá:</h3>
+                  <p>{selectedProduct.price.toLocaleString()} VND</p>
                 </div>
                 <div>
-                  <h3 className="font-bold">Quantity:</h3>
+                  <h3 className="font-bold">Số lượng:</h3>
                   <p>{selectedProduct.quantity}</p>
                 </div>
                 <div>
-                  <h3 className="font-bold">Quantity Limit:</h3>
+                  <h3 className="font-bold">Giới hạn số lượng:</h3>
                   <p>{selectedProduct.quantityLimit}</p>
                 </div>
                 <div>
-                  <h3 className="font-bold">Rating:</h3>
+                  <h3 className="font-bold">Đánh giá:</h3>
                   <p>{selectedProduct.rating} ★</p>
                 </div>
                 <div>
-                  <h3 className="font-bold">Description:</h3>
+                  <h3 className="font-bold">Mô tả:</h3>
                   <p>{selectedProduct.description}</p>
                 </div>
               </div>
@@ -365,7 +362,7 @@ const ProductListPage: React.FC = () => {
 
           {/* Edit Product Modal */}
           <Modal
-            title="Edit Product"
+            title="Chỉnh sửa sản phẩm"
             open={isEditModalVisible}
             onCancel={() => setIsEditModalVisible(false)}
             footer={null}
@@ -373,9 +370,9 @@ const ProductListPage: React.FC = () => {
             <Form form={form} layout="vertical" onFinish={handleUpdateProduct}>
               <Form.Item
                 name="productName"
-                label="Product Name"
+                label="Tên sản phẩm"
                 rules={[
-                  { required: true, message: "Please input product name!" },
+                  { required: true, message: "Vui lòng nhập tên sản phẩm!" },
                 ]}
               >
                 <Input />
@@ -383,28 +380,28 @@ const ProductListPage: React.FC = () => {
 
               <Form.Item
                 name="productType"
-                label="Product Type"
+                label="Loại sản phẩm"
                 rules={[
-                  { required: true, message: "Please select product type!" },
+                  { required: true, message: "Vui lòng chọn loại sản phẩm!" },
                 ]}
               >
                 <Select>
-                  <Select.Option value={1}>Smartphone</Select.Option>
+                  <Select.Option value={1}>Điện thoại</Select.Option>
                   <Select.Option value={2}>Laptop</Select.Option>
-                  <Select.Option value={3}>Accessories</Select.Option>
-                  <Select.Option value={4}>Tablet</Select.Option>
+                  <Select.Option value={3}>Phụ kiện</Select.Option>
+                  <Select.Option value={4}>Máy tính bảng</Select.Option>
                 </Select>
               </Form.Item>
 
               <Form.Item
                 name="price"
-                label="Price"
-                rules={[{ required: true, message: "Please input price!" }]}
+                label="Giá"
+                rules={[{ required: true, message: "Vui lòng nhập giá!" }]}
               >
                 <InputNumber
                   style={{ width: "100%" }}
                   formatter={(value) =>
-                    `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    `${value} VND`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
                   }
                   parser={(value) => value!.replace(/\$\s?|(,*)/g, "")}
                 />
@@ -412,17 +409,20 @@ const ProductListPage: React.FC = () => {
 
               <Form.Item
                 name="quantity"
-                label="Quantity"
-                rules={[{ required: true, message: "Please input quantity!" }]}
+                label="Số lượng"
+                rules={[{ required: true, message: "Vui lòng nhập số lượng!" }]}
               >
                 <InputNumber style={{ width: "100%" }} min={0} />
               </Form.Item>
 
               <Form.Item
                 name="quantityLimit"
-                label="Quantity Limit"
+                label="Giới hạn số lượng"
                 rules={[
-                  { required: true, message: "Please input quantity limit!" },
+                  {
+                    required: true,
+                    message: "Vui lòng nhập giới hạn số lượng!",
+                  },
                 ]}
               >
                 <InputNumber style={{ width: "100%" }} min={0} />
@@ -430,25 +430,23 @@ const ProductListPage: React.FC = () => {
 
               <Form.Item
                 name="description"
-                label="Description"
-                rules={[
-                  { required: true, message: "Please input description!" },
-                ]}
+                label="Mô tả"
+                rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
               >
                 <TextArea rows={4} />
               </Form.Item>
 
               <Form.Item
                 name="image"
-                label="Image URL"
-                rules={[{ required: true, message: "Please input image URL!" }]}
+                label="Hình ảnh"
+                rules={[{ required: true, message: "Vui lòng nhập hình ảnh!" }]}
               >
                 <Input />
               </Form.Item>
 
               <Form.Item>
                 <Button type="primary" htmlType="submit" loading={loading}>
-                  Update Product
+                  Cập nhật sản phẩm
                 </Button>
               </Form.Item>
             </Form>
@@ -456,7 +454,7 @@ const ProductListPage: React.FC = () => {
 
           {/* Create Product Modal */}
           <Modal
-            title="Create New Product"
+            title="Thêm sản phẩm mới"
             open={isCreateModalVisible}
             onCancel={() => setIsCreateModalVisible(false)}
             footer={null}
@@ -468,9 +466,9 @@ const ProductListPage: React.FC = () => {
             >
               <Form.Item
                 name="productName"
-                label="Product Name"
+                label="Tên sản phẩm"
                 rules={[
-                  { required: true, message: "Please input product name!" },
+                  { required: true, message: "Vui lòng nhập tên sản phẩm!" },
                 ]}
               >
                 <Input />
@@ -478,28 +476,28 @@ const ProductListPage: React.FC = () => {
 
               <Form.Item
                 name="productType"
-                label="Product Type"
+                label="Loại sản phẩm"
                 rules={[
-                  { required: true, message: "Please select product type!" },
+                  { required: true, message: "Vui lòng chọn loại sản phẩm!" },
                 ]}
               >
                 <Select>
-                  <Select.Option value={1}>Smartphone</Select.Option>
+                  <Select.Option value={1}>Điện thoại</Select.Option>
                   <Select.Option value={2}>Laptop</Select.Option>
-                  <Select.Option value={3}>Accessories</Select.Option>
-                  <Select.Option value={4}>Tablet</Select.Option>
+                  <Select.Option value={3}>Phụ kiện</Select.Option>
+                  <Select.Option value={4}>Máy tính bảng</Select.Option>
                 </Select>
               </Form.Item>
 
               <Form.Item
                 name="price"
-                label="Price"
-                rules={[{ required: true, message: "Please input price!" }]}
+                label="Giá"
+                rules={[{ required: true, message: "Vui lòng nhập giá!" }]}
               >
                 <InputNumber
                   style={{ width: "100%" }}
                   formatter={(value) =>
-                    `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    `${value} VND`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
                   }
                   parser={(value) => value!.replace(/\$\s?|(,*)/g, "")}
                 />
@@ -507,17 +505,20 @@ const ProductListPage: React.FC = () => {
 
               <Form.Item
                 name="quantity"
-                label="Quantity"
-                rules={[{ required: true, message: "Please input quantity!" }]}
+                label="Số lượng"
+                rules={[{ required: true, message: "Vui lòng nhập số lượng!" }]}
               >
                 <InputNumber style={{ width: "100%" }} min={0} />
               </Form.Item>
 
               <Form.Item
                 name="quantityLimit"
-                label="Quantity Limit"
+                label="Giới hạn số lượng"
                 rules={[
-                  { required: true, message: "Please input quantity limit!" },
+                  {
+                    required: true,
+                    message: "Vui lòng nhập giới hạn số lượng!",
+                  },
                 ]}
               >
                 <InputNumber style={{ width: "100%" }} min={0} />
@@ -525,25 +526,23 @@ const ProductListPage: React.FC = () => {
 
               <Form.Item
                 name="description"
-                label="Description"
-                rules={[
-                  { required: true, message: "Please input description!" },
-                ]}
+                label="Mô tả"
+                rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
               >
                 <TextArea rows={4} />
               </Form.Item>
 
               <Form.Item
                 name="image"
-                label="Image URL"
-                rules={[{ required: true, message: "Please input image URL!" }]}
+                label="Hình ảnh"
+                rules={[{ required: true, message: "Vui lòng nhập hình ảnh!" }]}
               >
                 <Input />
               </Form.Item>
 
               <Form.Item>
                 <Button type="primary" htmlType="submit" loading={loading}>
-                  Create Product
+                  Thêm sản phẩm
                 </Button>
               </Form.Item>
             </Form>
@@ -551,7 +550,7 @@ const ProductListPage: React.FC = () => {
 
           {/* Delete Confirmation Modal */}
           <Modal
-            title="Delete Product"
+            title="Xóa sản phẩm"
             open={isDeleteModalVisible}
             onOk={handleConfirmDelete}
             onCancel={() => {
@@ -564,8 +563,8 @@ const ProductListPage: React.FC = () => {
             confirmLoading={loading}
           >
             <p>
-              Are you sure you want to delete this product? This action cannot
-              be undone.
+              Bạn có chắc chắn muốn xóa sản phẩm này? Hành động này không thể
+              hoàn tác.
             </p>
           </Modal>
         </div>

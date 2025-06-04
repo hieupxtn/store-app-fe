@@ -16,7 +16,7 @@ const BrandsPage: React.FC = () => {
     const fetchBrands = async () => {
       try {
         const response = await api.getBrands();
-        setBrands(response); // The response is already an array of brands
+        setBrands(response);
       } catch (error) {
         console.error("Failed to fetch brands:", error);
       } finally {
@@ -37,7 +37,7 @@ const BrandsPage: React.FC = () => {
       <Content className="bg-gray-50">
         <div className="container mx-auto px-4 py-8 min-h-[751px]">
           <Typography.Title level={2} className="!text-[#0a174e] !mb-8">
-            All Brands
+            Tất cả các thương hiệu
           </Typography.Title>
 
           {loading ? (

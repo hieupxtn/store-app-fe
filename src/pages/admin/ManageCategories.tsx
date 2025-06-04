@@ -12,12 +12,7 @@ import {
   Popconfirm,
   Typography,
 } from "antd";
-import {
-  PlusOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  ArrowLeftOutlined,
-} from "@ant-design/icons";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { api, ProductType } from "../../services/api";
 import AppHeader from "../../common/AppHeader";
@@ -47,7 +42,6 @@ const ManageCategories: React.FC = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
 
-  // Check admin access
   const checkAdminAccess = useCallback(() => {
     const userData = localStorage.getItem("user");
     if (userData) {
@@ -57,29 +51,28 @@ const ManageCategories: React.FC = () => {
         const role =
           parsedUser.role || parsedUser.typeRole || parsedUser.keyRole;
         if (role !== "admin") {
-          message.error("You don't have permission to access this page");
+          message.error("Bạn không có quyền truy cập vào trang này");
           navigate("/");
         }
       } catch (err) {
-        console.error("Error parsing user data:", err);
-        message.error("Error loading user data");
+        console.error("Lỗi khi phân tích dữ liệu người dùng:", err);
+        message.error("Lỗi khi tải dữ liệu người dùng");
         navigate("/login");
       }
     } else {
-      message.error("Please login first");
+      message.error("Vui lòng đăng nhập trước");
       navigate("/login");
     }
   }, [navigate]);
 
-  // Fetch categories
   const fetchCategories = useCallback(async () => {
     try {
       setLoading(true);
       const response = await api.getAllProductTypes();
       setCategories(response.types);
     } catch (err) {
-      console.error("Error fetching categories:", err);
-      message.error("Failed to fetch categories");
+      console.error("Lỗi khi tải danh mục:", err);
+      message.error("Lỗi khi tải danh mục");
     } finally {
       setLoading(false);
     }
@@ -94,13 +87,13 @@ const ManageCategories: React.FC = () => {
     async (values: { name: string; description?: string }) => {
       try {
         await api.createProductType(values);
-        message.success("Category created successfully");
+        message.success("Danh mục đã được tạo thành công");
         setModalVisible(false);
         form.resetFields();
         fetchCategories();
       } catch (err) {
-        console.error("Error creating category:", err);
-        message.error("Failed to create category");
+        console.error("Lỗi khi tạo danh mục:", err);
+        message.error("Lỗi khi tạo danh mục");
       }
     },
     [form, fetchCategories]
@@ -111,14 +104,14 @@ const ManageCategories: React.FC = () => {
       if (!editingCategory) return;
       try {
         await api.updateProductType(editingCategory.id, values);
-        message.success("Category updated successfully");
+        message.success("Danh mục đã được cập nhật thành công");
         setModalVisible(false);
         setEditingCategory(null);
         form.resetFields();
         fetchCategories();
       } catch (err) {
-        console.error("Error updating category:", err);
-        message.error("Failed to update category");
+        console.error("Lỗi khi cập nhật danh mục:", err);
+        message.error("Lỗi khi cập nhật danh mục");
       }
     },
     [editingCategory, form, fetchCategories]
@@ -128,11 +121,11 @@ const ManageCategories: React.FC = () => {
     async (id: number) => {
       try {
         await api.deleteProductType(id);
-        message.success("Category deleted successfully");
+        message.success("Danh mục đã được xóa thành công");
         fetchCategories();
       } catch (err) {
-        console.error("Error deleting category:", err);
-        message.error("Failed to delete category");
+        console.error("Lỗi khi xóa danh mục:", err);
+        message.error("Lỗi khi xóa danh mục");
       }
     },
     [fetchCategories]
@@ -173,18 +166,18 @@ const ManageCategories: React.FC = () => {
       sorter: (a: ProductType, b: ProductType) => a.id - b.id,
     },
     {
-      title: "Name",
+      title: "Tên",
       dataIndex: "name",
       key: "name",
       sorter: (a: ProductType, b: ProductType) => a.name.localeCompare(b.name),
     },
     {
-      title: "Description",
+      title: "Mô tả",
       dataIndex: "description",
       key: "description",
     },
     {
-      title: "Created At",
+      title: "Ngày tạo",
       dataIndex: "createdAt",
       key: "createdAt",
       render: (date: string) => dayjs(date).format("YYYY-MM-DD HH:mm:ss"),
@@ -192,7 +185,7 @@ const ManageCategories: React.FC = () => {
         dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix(),
     },
     {
-      title: "Updated At",
+      title: "Ngày cập nhật",
       dataIndex: "updatedAt",
       key: "updatedAt",
       render: (date: string) => dayjs(date).format("YYYY-MM-DD HH:mm:ss"),
@@ -200,7 +193,7 @@ const ManageCategories: React.FC = () => {
         dayjs(a.updatedAt).unix() - dayjs(b.updatedAt).unix(),
     },
     {
-      title: "Actions",
+      title: "Hành động",
       key: "actions",
       render: (_: unknown, record: ProductType) => (
         <Space>
@@ -209,16 +202,16 @@ const ManageCategories: React.FC = () => {
             icon={<EditOutlined />}
             onClick={() => showModal(record)}
           >
-            Edit
+            Sửa
           </Button>
           <Popconfirm
-            title="Are you sure you want to delete this category?"
+            title="Bạn có chắc chắn muốn xóa danh mục này?"
             onConfirm={() => handleDelete(record.id)}
-            okText="Yes"
-            cancelText="No"
+            okText="Có"
+            cancelText="Không"
           >
             <Button type="primary" danger icon={<DeleteOutlined />}>
-              Delete
+              Xóa
             </Button>
           </Popconfirm>
         </Space>
@@ -236,21 +229,13 @@ const ManageCategories: React.FC = () => {
       <Content className="flex-grow bg-gray-100">
         <div className="w-full px-4 py-8 min-h-[751px] max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-6">
-            <Title level={2}>Manage Categories</Title>
+            <Title level={2}>Quản lý danh mục</Title>
             <Space>
-              <Button
-                type="default"
-                icon={<ArrowLeftOutlined />}
-                onClick={() => navigate("/admin")}
-              >
-                Back to Dashboard
+              <Button type="default" onClick={() => navigate("/admin")}>
+                Quay lại trang quản trị
               </Button>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => showModal()}
-              >
-                Add Category
+              <Button type="primary" onClick={() => showModal()}>
+                Thêm danh mục
               </Button>
             </Space>
           </div>
@@ -266,7 +251,7 @@ const ManageCategories: React.FC = () => {
           </Card>
 
           <Modal
-            title={editingCategory ? "Edit Category" : "Add Category"}
+            title={editingCategory ? "Sửa danh mục" : "Thêm danh mục"}
             open={modalVisible}
             onOk={handleModalOk}
             onCancel={handleModalCancel}
@@ -279,17 +264,17 @@ const ManageCategories: React.FC = () => {
             >
               <Form.Item
                 name="name"
-                label="Name"
+                label="Tên"
                 rules={[
                   {
                     required: true,
-                    message: "Please input the category name!",
+                    message: "Vui lòng nhập tên danh mục!",
                   },
                 ]}
               >
                 <Input />
               </Form.Item>
-              <Form.Item name="description" label="Description">
+              <Form.Item name="description" label="Mô tả">
                 <Input.TextArea rows={4} />
               </Form.Item>
             </Form>

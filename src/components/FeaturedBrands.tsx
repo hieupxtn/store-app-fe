@@ -27,14 +27,14 @@ const FeaturedBrands: React.FC = () => {
     <div className="mt-16 px-14">
       <div className="flex items-center mb-4">
         <Typography.Title level={3} className="!mb-0 !mr-4 !text-[#0a174e]">
-          Featured Brands
+          Thương hiệu nổi bật
         </Typography.Title>
         <Button
           type="link"
           className="!text-gray-500 flex items-center"
           onClick={() => navigate("/brands")}
         >
-          See More <span className="ml-1">&rarr;</span>
+          Xem thêm <span className="ml-1">&rarr;</span>
         </Button>
       </div>
       {loading ? (

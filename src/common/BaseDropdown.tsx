@@ -18,17 +18,17 @@ import {
 import { Button, Dropdown } from "antd";
 
 const productTypes = [
-  { id: 1, name: "Phone", icon: <MobileOutlined /> },
+  { id: 1, name: "Điện thoại", icon: <MobileOutlined /> },
   { id: 2, name: "Laptop", icon: <LaptopOutlined /> },
-  { id: 3, name: "Screen-Speaker", icon: <FundProjectionScreenOutlined /> },
+  { id: 3, name: "Màn hình - Loa", icon: <FundProjectionScreenOutlined /> },
   { id: 4, name: "Gear", icon: <ToolOutlined /> },
   { id: 5, name: "Tablet", icon: <TabletOutlined /> },
   { id: 6, name: "Smartwatch", icon: <ClockCircleOutlined /> },
-  { id: 7, name: "Computer-Components", icon: <AppstoreOutlined /> },
+  { id: 7, name: "Phụ kiện", icon: <AppstoreOutlined /> },
   { id: 8, name: "Camera", icon: <CameraOutlined /> },
-  { id: 9, name: "Memory", icon: <UsbOutlined /> },
-  { id: 10, name: "Out-Memory", icon: <DatabaseOutlined /> },
-  { id: 11, name: "Accessories", icon: <CustomerServiceOutlined /> },
+  { id: 10, name: "Bộ nhớ", icon: <UsbOutlined /> },
+  { id: 11, name: "Thẻ nhớ", icon: <DatabaseOutlined /> },
+  { id: 12, name: "Phụ kiện", icon: <CustomerServiceOutlined /> },
 ];
 
 const BaseDropdown: React.FC = () => {
@@ -54,7 +54,7 @@ const BaseDropdown: React.FC = () => {
       <Dropdown menu={menuProps} className="mx-5">
         <Button type="primary" size="large" className="!font-bold">
           <MenuOutlined />
-          Product Catalog
+          Danh mục sản phẩm
         </Button>
       </Dropdown>
     </>

@@ -45,16 +45,13 @@ const AppHeader: React.FC = () => {
       }
     };
 
-    // Check for user data
     const userData = localStorage.getItem("user");
     if (userData) {
       setUser(JSON.parse(userData));
     }
 
-    // Initial counts
     updateCounts();
 
-    // Listen for storage changes to update counts
     window.addEventListener("storage", updateCounts);
     return () => window.removeEventListener("storage", updateCounts);
   }, []);
@@ -68,7 +65,7 @@ const AppHeader: React.FC = () => {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       setUser(null);
-      message.success("Logged out successfully");
+      message.success("Đăng xuất thành công");
       navigate("/");
     }
   };
@@ -76,13 +73,19 @@ const AppHeader: React.FC = () => {
   const userMenuItems = [
     {
       key: "profile",
-      label: "Profile",
+      label: "Hồ sơ",
       icon: <UserOutlined />,
       onClick: () => navigate("/profile"),
     },
     {
+      key: "purchase-history",
+      label: "Lịch sử mua hàng",
+      icon: <ShoppingCartOutlined />,
+      onClick: () => navigate("/purchase-history"),
+    },
+    {
       key: "logout",
-      label: "Logout",
+      label: "Đăng xuất",
       icon: <LogoutOutlined />,
       onClick: handleLogout,
     },
@@ -141,7 +144,7 @@ const AppHeader: React.FC = () => {
               icon={<UserOutlined className="!text-blue-100 !text-xl" />}
               className="hidden md:inline-flex !text-lg !text-blue-100"
             >
-              Login
+              Đăng nhập
             </Button>
           </Link>
         )}
@@ -152,7 +155,7 @@ const AppHeader: React.FC = () => {
               icon={<HeartOutlined className="!text-red-500 text-xl" />}
               className="hidden md:inline-flex !text-lg !text-blue-100"
             >
-              Wishlist
+              Yêu thích
             </Button>
           </Badge>
         </Link>
@@ -163,7 +166,7 @@ const AppHeader: React.FC = () => {
               icon={<ShoppingCartOutlined className="!text-blue-100 text-xl" />}
               className="hidden md:inline-flex !text-lg !text-blue-100"
             >
-              Cart
+              Giỏ hàng
             </Button>
           </Badge>
         </Link>

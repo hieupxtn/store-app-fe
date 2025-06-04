@@ -22,7 +22,6 @@ import {
   SearchOutlined,
   FilterOutlined,
   ReloadOutlined,
-  ArrowLeftOutlined,
   DownOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -39,11 +38,19 @@ import isBetween from "dayjs/plugin/isBetween";
 import type { ColumnsType } from "antd/es/table";
 import type { MenuProps } from "antd";
 
-// Extend dayjs with isBetween plugin
 dayjs.extend(isBetween);
 
 const { Content } = Layout;
 const { RangePicker } = DatePicker;
+
+const statusMap: { [key: string]: string } = {
+  pending: "Đang chờ",
+  processing: "Đang xử lý",
+  shipped: "Đang giao hàng",
+  delivered: "Đã giao hàng",
+  cancelled: "Đã hủy",
+  completed: "Hoàn thành",
+};
 
 interface UserData {
   id: number;
@@ -69,7 +76,6 @@ const ManageOrders: React.FC = () => {
   );
   const navigate = useNavigate();
 
-  // Check admin access
   const checkAdminAccess = useCallback(() => {
     const userData = localStorage.getItem("user");
     if (userData) {
@@ -79,29 +85,28 @@ const ManageOrders: React.FC = () => {
         const role =
           parsedUser.role || parsedUser.typeRole || parsedUser.keyRole;
         if (role !== "admin") {
-          message.error("You don't have permission to access this page");
+          message.error("Bạn không có quyền truy cập vào trang này");
           navigate("/");
         }
       } catch (err) {
-        console.error("Error parsing user data:", err);
-        message.error("Error loading user data");
+        console.error("Lỗi khi phân tích dữ liệu người dùng:", err);
+        message.error("Lỗi khi tải dữ liệu người dùng");
         navigate("/login");
       }
     } else {
-      message.error("Please login first");
+      message.error("Vui lòng đăng nhập trước");
       navigate("/login");
     }
   }, [navigate]);
 
-  // Fetch orders
   const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
       const response = await api.getAllOrders();
       setOrders(response.orders);
     } catch (err) {
-      console.error("Error fetching orders:", err);
-      setError("Failed to fetch orders. Please try again later.");
+      console.error("Lỗi khi tải đơn hàng:", err);
+      setError("Lỗi khi tải đơn hàng. Vui lòng thử lại sau.");
     } finally {
       setLoading(false);
     }
@@ -147,7 +152,6 @@ const ManageOrders: React.FC = () => {
   }, []);
 
   const handleSearch = useCallback(() => {
-    // Filter orders based on search criteria
     const filteredOrders = orders.filter((order) => {
       const matchesSearch = searchText
         ? order.id.toString().includes(searchText) ||
@@ -193,11 +197,11 @@ const ManageOrders: React.FC = () => {
       try {
         setLoading(true);
         await api.updateOrderStatus(orderId, { status: newStatus });
-        message.success("Order status updated successfully");
-        fetchOrders(); // Refresh the orders list
+        message.success("Trạng thái đơn hàng đã được cập nhật thành công");
+        fetchOrders();
       } catch (error) {
-        console.error("Error updating order status:", error);
-        message.error("Failed to update order status");
+        console.error("Lỗi khi cập nhật trạng thái đơn hàng:", error);
+        message.error("Lỗi khi cập nhật trạng thái đơn hàng");
       } finally {
         setLoading(false);
       }
@@ -208,48 +212,48 @@ const ManageOrders: React.FC = () => {
   const getStatusMenuItems = (): MenuProps["items"] => [
     {
       key: "pending",
-      label: "Pending",
+      label: "Đang chờ",
     },
     {
       key: "processing",
-      label: "Processing",
+      label: "Đang xử lý",
     },
     {
       key: "shipped",
-      label: "Shipped",
+      label: "Đang giao hàng",
     },
     {
       key: "delivered",
-      label: "Delivered",
+      label: "Đã giao hàng",
     },
     {
       key: "cancelled",
-      label: "Cancelled",
+      label: "Đã hủy",
     },
   ];
 
   const columns: ColumnsType<Order> = [
     {
-      title: "Order ID",
+      title: "Mã đơn hàng",
       dataIndex: "id",
       key: "id",
       sorter: (a, b) => a.id - b.id,
     },
     {
-      title: "Customer",
+      title: "Khách hàng",
       dataIndex: "customerInfo",
       key: "customerInfo",
       render: (customerInfo: CustomerInfo) => customerInfo.name,
     },
     {
-      title: "Total Amount",
+      title: "Tổng tiền",
       dataIndex: "totalAmount",
       key: "totalAmount",
-      render: (amount: number) => `$${amount.toFixed(2)}`,
+      render: (amount: number) => `${amount.toLocaleString()} VND`,
       sorter: (a, b) => a.totalAmount - b.totalAmount,
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       key: "status",
       render: (status: string, record: Order) => (
@@ -266,30 +270,31 @@ const ManageOrders: React.FC = () => {
         >
           <Button type="link" className="p-0">
             <Tag color={getStatusColor(status)}>
-              {status.charAt(0).toUpperCase() + status.slice(1)}
+              {statusMap[status.toLowerCase()] ||
+                status.charAt(0).toUpperCase() + status.slice(1)}
               <DownOutlined className="ml-1" />
             </Tag>
           </Button>
         </Dropdown>
       ),
       filters: [
-        { text: "Pending", value: "pending" },
-        { text: "Processing", value: "processing" },
-        { text: "Shipped", value: "shipped" },
-        { text: "Delivered", value: "delivered" },
-        { text: "Cancelled", value: "cancelled" },
+        { text: "Đang chờ", value: "pending" },
+        { text: "Đang xử lý", value: "processing" },
+        { text: "Đang giao hàng", value: "shipped" },
+        { text: "Đã giao hàng", value: "delivered" },
+        { text: "Đã hủy", value: "cancelled" },
       ],
       onFilter: (value, record) =>
         record.status.toLowerCase() === String(value).toLowerCase(),
     },
     {
-      title: "Payment Method",
+      title: "Phương thức thanh toán",
       dataIndex: "paymentMethod",
       key: "paymentMethod",
       render: (method: string) => method.toUpperCase(),
     },
     {
-      title: "Created At",
+      title: "Ngày tạo",
       dataIndex: "createdAt",
       key: "createdAt",
       render: (date: string) => new Date(date).toLocaleString(),
@@ -297,11 +302,11 @@ const ManageOrders: React.FC = () => {
         new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
     },
     {
-      title: "Actions",
+      title: "Hành động",
       key: "actions",
       render: (_, record) => (
         <Button type="link" onClick={() => handleViewOrder(record.id)}>
-          View Details
+          Xem chi tiết
         </Button>
       ),
     },
@@ -317,13 +322,9 @@ const ManageOrders: React.FC = () => {
       <Content className="flex-grow bg-gray-100">
         <div className="w-full px-4 py-8 min-h-[751px] max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold">Manage Orders</h1>
-            <Button
-              type="default"
-              icon={<ArrowLeftOutlined />}
-              onClick={() => navigate("/admin")}
-            >
-              Back to Dashboard
+            <h1 className="text-2xl font-bold">Quản lý đơn hàng</h1>
+            <Button type="default" onClick={() => navigate("/admin")}>
+              Quay lại trang quản trị
             </Button>
           </div>
 
@@ -332,7 +333,7 @@ const ManageOrders: React.FC = () => {
             <Row gutter={[16, 16]}>
               <Col xs={24} sm={12} md={6}>
                 <Input
-                  placeholder="Search by Order ID, Customer Name, or Customer Email"
+                  placeholder="Tìm kiếm theo mã đơn hàng, tên khách hàng hoặc email"
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                   prefix={<SearchOutlined />}
@@ -340,16 +341,18 @@ const ManageOrders: React.FC = () => {
               </Col>
               <Col xs={24} sm={12} md={6}>
                 <Select
-                  placeholder="Filter by Status"
+                  placeholder="Lọc theo trạng thái"
                   style={{ width: "100%" }}
                   value={statusFilter}
                   onChange={setStatusFilter}
                   allowClear
                 >
-                  <Select.Option value="completed">Completed</Select.Option>
-                  <Select.Option value="pending">Pending</Select.Option>
-                  <Select.Option value="processing">Processing</Select.Option>
-                  <Select.Option value="cancelled">Cancelled</Select.Option>
+                  <Select.Option value="pending">Đang chờ</Select.Option>
+                  <Select.Option value="processing">Đang xử lý</Select.Option>
+                  <Select.Option value="shipped">Đang giao hàng</Select.Option>
+                  <Select.Option value="delivered">Đã giao hàng</Select.Option>
+                  <Select.Option value="cancelled">Đã hủy</Select.Option>
+                  <Select.Option value="completed">Hoàn thành</Select.Option>
                 </Select>
               </Col>
               <Col xs={24} sm={12} md={6}>
@@ -368,10 +371,10 @@ const ManageOrders: React.FC = () => {
                     icon={<FilterOutlined />}
                     onClick={handleSearch}
                   >
-                    Apply Filters
+                    Áp dụng bộ lọc
                   </Button>
                   <Button icon={<ReloadOutlined />} onClick={handleReset}>
-                    Reset
+                    Đặt lại
                   </Button>
                 </Space>
               </Col>
@@ -409,7 +412,7 @@ const ManageOrders: React.FC = () => {
 
           {/* Order Details Modal */}
           <Modal
-            title="Order Details"
+            title="Chi tiết đơn hàng"
             open={orderModalVisible}
             onCancel={handleCloseOrderModal}
             footer={null}
@@ -418,54 +421,55 @@ const ManageOrders: React.FC = () => {
             bodyStyle={{ maxHeight: "calc(100vh - 200px)", overflow: "auto" }}
           >
             {orderLoading ? (
-              <Spin tip="Loading order details..." />
+              <Spin tip="Đang tải thông tin chi tiết đơn hàng..." />
             ) : selectedOrder ? (
               <div className="space-y-6">
                 <Descriptions bordered column={2} size="small">
-                  <Descriptions.Item label="Order ID" span={1}>
+                  <Descriptions.Item label="Mã đơn hàng" span={1}>
                     {selectedOrder.id}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Status" span={1}>
+                  <Descriptions.Item label="Trạng thái" span={1}>
                     <Tag color={getStatusColor(selectedOrder.status)}>
-                      {selectedOrder.status.charAt(0).toUpperCase() +
-                        selectedOrder.status.slice(1)}
+                      {statusMap[selectedOrder.status.toLowerCase()] ||
+                        selectedOrder.status.charAt(0).toUpperCase() +
+                          selectedOrder.status.slice(1)}
                     </Tag>
                   </Descriptions.Item>
-                  <Descriptions.Item label="Customer Name" span={1}>
+                  <Descriptions.Item label="Tên khách hàng" span={1}>
                     {selectedOrder.customerInfo.name}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Customer Email" span={1}>
+                  <Descriptions.Item label="Email khách hàng" span={1}>
                     {selectedOrder.customerInfo.email}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Customer Phone" span={1}>
+                  <Descriptions.Item label="Số điện thoại khách hàng" span={1}>
                     {selectedOrder.customerInfo.phone}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Shipping Address" span={1}>
+                  <Descriptions.Item label="Địa chỉ giao hàng" span={1}>
                     {selectedOrder.shippingAddress.replace(/"/g, "")}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Payment Method" span={1}>
+                  <Descriptions.Item label="Phương thức thanh toán" span={1}>
                     {selectedOrder.paymentMethod.toUpperCase()}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Created At" span={1}>
+                  <Descriptions.Item label="Ngày tạo" span={1}>
                     {new Date(selectedOrder.createdAt).toLocaleString()}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Updated At" span={1}>
+                  <Descriptions.Item label="Ngày cập nhật" span={1}>
                     {new Date(selectedOrder.updatedAt).toLocaleString()}
                   </Descriptions.Item>
                   {selectedOrder.trackingNumber && (
-                    <Descriptions.Item label="Tracking Number" span={1}>
+                    <Descriptions.Item label="Mã vận đơn" span={1}>
                       {selectedOrder.trackingNumber}
                     </Descriptions.Item>
                   )}
                   {selectedOrder.estimatedDeliveryDate && (
-                    <Descriptions.Item label="Estimated Delivery" span={1}>
+                    <Descriptions.Item label="Ngày dự kiến giao hàng" span={1}>
                       {new Date(
                         selectedOrder.estimatedDeliveryDate
                       ).toLocaleString()}
                     </Descriptions.Item>
                   )}
                   {selectedOrder.actualDeliveryDate && (
-                    <Descriptions.Item label="Actual Delivery" span={1}>
+                    <Descriptions.Item label="Ngày thực tế giao hàng" span={1}>
                       {new Date(
                         selectedOrder.actualDeliveryDate
                       ).toLocaleString()}
@@ -474,83 +478,86 @@ const ManageOrders: React.FC = () => {
                 </Descriptions>
 
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="text-lg font-semibold mb-4">Order Items</h3>
+                  <h3 className="text-lg font-semibold mb-4">
+                    Sản phẩm đơn hàng
+                  </h3>
                   <Table
                     dataSource={selectedOrder.items}
                     rowKey="productId"
                     pagination={false}
                     columns={[
                       {
-                        title: "Product Name",
+                        title: "Tên sản phẩm",
                         dataIndex: "productName",
                         key: "productName",
                         width: "25%",
                       },
                       {
-                        title: "Product Type",
+                        title: "Loại sản phẩm",
                         dataIndex: "productType",
                         key: "productType",
                         width: "15%",
                       },
                       {
-                        title: "Quantity",
+                        title: "Số lượng",
                         dataIndex: "quantity",
                         key: "quantity",
                         width: "10%",
                         align: "center" as const,
                       },
                       {
-                        title: "Price",
+                        title: "Giá",
                         dataIndex: "price",
                         key: "price",
                         width: "15%",
                         align: "right" as const,
-                        render: (price: number) => `$${price.toFixed(2)}`,
+                        render: (price: number) =>
+                          `${price.toLocaleString()} VND`,
                       },
                       {
-                        title: "Total",
+                        title: "Tổng",
                         dataIndex: "total",
                         key: "total",
                         width: "15%",
                         align: "right" as const,
-                        render: (total: number) => `$${total.toFixed(2)}`,
+                        render: (total: number) =>
+                          `${total.toLocaleString()} VND`,
                       },
                     ]}
                   />
                 </div>
 
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
                   <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span>Subtotal:</span>
-                      <span>${selectedOrder.totalAmount.toFixed(2)}</span>
-                    </div>
                     {selectedOrder.discount && (
                       <div className="flex justify-between text-green-600">
-                        <span>Discount:</span>
-                        <span>-${selectedOrder.discount.toFixed(2)}</span>
+                        <span>Giảm giá:</span>
+                        <span>
+                          - {selectedOrder.discount.toLocaleString()} VND
+                        </span>
                       </div>
                     )}
                     {selectedOrder.shippingFee && (
                       <div className="flex justify-between">
-                        <span>Shipping Fee:</span>
-                        <span>${selectedOrder.shippingFee.toFixed(2)}</span>
+                        <span>Phí vận chuyển:</span>
+                        <span>
+                          {selectedOrder.shippingFee.toLocaleString()} VND
+                        </span>
                       </div>
                     )}
                     {selectedOrder.tax && (
                       <div className="flex justify-between">
-                        <span>Tax:</span>
-                        <span>${selectedOrder.tax.toFixed(2)}</span>
+                        <span>Thuế:</span>
+                        <span>{selectedOrder.tax.toLocaleString()} VND</span>
                       </div>
                     )}
                     <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2">
-                      <span>Final Amount:</span>
+                      <span>Tổng tiền:</span>
                       <span>
-                        $
                         {(
                           selectedOrder.finalAmount || selectedOrder.totalAmount
-                        ).toFixed(2)}
+                        ).toLocaleString()}{" "}
+                        VND
                       </span>
                     </div>
                   </div>
@@ -558,7 +565,7 @@ const ManageOrders: React.FC = () => {
 
                 {selectedOrder.note && (
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-2">Note</h3>
+                    <h3 className="text-lg font-semibold mb-2">Ghi chú</h3>
                     <p className="text-gray-600">{selectedOrder.note}</p>
                   </div>
                 )}

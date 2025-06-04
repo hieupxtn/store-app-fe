@@ -11,7 +11,7 @@ const NotFound: React.FC = () => {
       <Result
         status="404"
         title="404"
-        subTitle="Sorry, the page you visited does not exist."
+        subTitle="Trang bạn đang tìm kiếm không tồn tại."
         extra={
           <Button
             type="primary"
@@ -20,7 +20,7 @@ const NotFound: React.FC = () => {
             className="!bg-[#803535] hover:!bg-[#bb8570] !border-none"
             size="large"
           >
-            Back to Home
+            Trở lại trang chủ
           </Button>
         }
         className="bg-white p-8 rounded-lg shadow-lg"

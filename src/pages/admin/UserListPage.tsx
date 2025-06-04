@@ -85,53 +85,53 @@ const UserListPage: React.FC = () => {
       key: "email",
     },
     {
-      title: "Name",
+      title: "Tên",
       key: "name",
       render: (_: unknown, record: User) => (
         <span>{`${record.firstName} ${record.lastName}`}</span>
       ),
     },
     {
-      title: "Role",
+      title: "Vai trò",
       dataIndex: "role",
       key: "role",
       render: (role: string) => getRoleTag(role),
     },
     {
-      title: "Gender",
+      title: "Giới tính",
       dataIndex: "gender",
       key: "gender",
       render: (gender: boolean | null) => getGenderText(gender),
     },
     {
-      title: "Address",
+      title: "Địa chỉ",
       dataIndex: "address",
       key: "address",
-      render: (address: string | null) => address || "Not specified",
+      render: (address: string | null) => address || "Chưa cập nhật",
     },
     {
-      title: "Created At",
+      title: "Ngày tạo",
       dataIndex: "createdAt",
       key: "createdAt",
       render: (date: string) => new Date(date).toLocaleString(),
     },
     {
-      title: "Actions",
+      title: "Thao tác",
       key: "actions",
       render: (_: unknown, record: User) => (
         <Space>
           <Button type="link" onClick={() => handleViewUser(record.id)}>
-            View
+            Xem
           </Button>
           <Button type="link" onClick={() => handleEditUser(record.id)}>
-            Edit
+            Sửa
           </Button>
           <Button
             type="link"
             danger
             onClick={() => handleDeleteUser(record.id)}
           >
-            Delete
+            Xóa
           </Button>
         </Space>
       ),
@@ -212,9 +212,9 @@ const UserListPage: React.FC = () => {
       <Content className="flex-grow bg-gray-100">
         <div className="w-full px-4 py-8 min-h-[751px]">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">User Management</h1>
+            <h1 className="text-2xl font-bold">Quản lý người dùng</h1>
             <Button onClick={() => navigate("/admin")}>
-              Back to Dashboard
+              Quay lại Dashboard
             </Button>
           </div>
 

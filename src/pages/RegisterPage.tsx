@@ -33,7 +33,7 @@ const RegisterPage: React.FC = () => {
     try {
       const response = await api.register(values);
       if (response && response.user) {
-        message.success("Registration successful! Please login.");
+        message.success("Đăng ký thành công! Vui lòng đăng nhập.");
         navigate("/login");
       } else {
         message.error("Registration failed");
@@ -44,12 +44,12 @@ const RegisterPage: React.FC = () => {
         message.error(
           registerError.response.data?.message ||
             registerError.response.data?.errMessage ||
-            "Registration failed. Please try again."
+            "Đăng ký thất bại. Vui lòng thử lại."
         );
       } else if (registerError.request) {
-        message.error("Cannot connect to server. Please try again later.");
+        message.error("Không thể kết nối đến máy chủ. Vui lòng thử lại sau.");
       } else {
-        message.error("An error occurred. Please try again.");
+        message.error("Đã xảy ra lỗi. Vui lòng thử lại.");
       }
     } finally {
       setLoading(false);
@@ -62,31 +62,31 @@ const RegisterPage: React.FC = () => {
       <Content className="flex-grow bg-gray-100">
         <div className="flex justify-center items-center min-h-[calc(100vh-128px)]">
           <Card className="w-full max-w-md p-6 shadow-lg rounded-lg">
-            <h2 className="text-2xl font-bold text-center mb-4">Register</h2>
+            <h2 className="text-2xl font-bold text-center mb-4">Đăng ký</h2>
             <Form layout="vertical" onFinish={onFinish}>
               <Form.Item
-                label="First Name"
+                label="Họ"
                 name="firstName"
                 rules={[
-                  { required: true, message: "Please input your first name!" },
+                  { required: true, message: "Vui lòng nhập họ của bạn!" },
                 ]}
               >
                 <Input
                   prefix={<UserOutlined />}
-                  placeholder="Enter your first name"
+                  placeholder="Nhập họ của bạn"
                 />
               </Form.Item>
 
               <Form.Item
-                label="Last Name"
+                label="Tên"
                 name="lastName"
                 rules={[
-                  { required: true, message: "Please input your last name!" },
+                  { required: true, message: "Vui lòng nhập tên của bạn!" },
                 ]}
               >
                 <Input
                   prefix={<UserOutlined />}
-                  placeholder="Enter your last name"
+                  placeholder="Nhập tên của bạn"
                 />
               </Form.Item>
 
@@ -94,31 +94,34 @@ const RegisterPage: React.FC = () => {
                 label="Email"
                 name="email"
                 rules={[
-                  { required: true, message: "Please input your email!" },
-                  { type: "email", message: "Please enter a valid email!" },
+                  { required: true, message: "Vui lòng nhập email của bạn!" },
+                  { type: "email", message: "Vui lòng nhập email hợp lệ!" },
                 ]}
               >
                 <Input
                   prefix={<MailOutlined />}
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder="Nhập email của bạn"
                 />
               </Form.Item>
 
               <Form.Item
-                label="Password"
+                label="Mật khẩu"
                 name="password"
                 rules={[
-                  { required: true, message: "Please input your password!" },
+                  {
+                    required: true,
+                    message: "Vui lòng nhập mật khẩu của bạn!",
+                  },
                   {
                     min: 6,
-                    message: "Password must be at least 6 characters!",
+                    message: "Mật khẩu phải có ít nhất 6 ký tự!",
                   },
                 ]}
               >
                 <Input.Password
                   prefix={<LockOutlined />}
-                  placeholder="Enter your password"
+                  placeholder="Nhập mật khẩu của bạn"
                 />
               </Form.Item>
 
@@ -129,14 +132,14 @@ const RegisterPage: React.FC = () => {
                   className="w-full bg-blue-500 hover:bg-blue-600"
                   loading={loading}
                 >
-                  Register
+                  Đăng ký
                 </Button>
               </Form.Item>
 
               <div className="text-center">
-                Already have an account?{" "}
+                Đã có tài khoản?{" "}
                 <Link to="/login" className="text-blue-500 hover:text-blue-600">
-                  Login
+                  Đăng nhập
                 </Link>
               </div>
             </Form>

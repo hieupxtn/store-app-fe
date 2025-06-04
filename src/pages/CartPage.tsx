@@ -26,15 +26,14 @@ const CartPage: React.FC = () => {
     const loadCart = async () => {
       try {
         const savedCart = await cartService.getCart();
-        // Initialize all items as selected by default
         const cartWithSelection = savedCart.map((item) => ({
           ...item,
           selected: true,
         }));
         setCart(cartWithSelection);
       } catch (error) {
-        console.error("Error loading cart:", error);
-        message.error("Failed to load cart");
+        console.error("Lỗi khi tải giỏ hàng:", error);
+        message.error("Không thể tải giỏ hàng");
       } finally {
         setLoading(false);
       }
@@ -52,11 +51,10 @@ const CartPage: React.FC = () => {
           selected: cart.find((c) => c.id === item.id)?.selected ?? true,
         }))
       );
-      // Trigger storage event to update cart count in header
       window.dispatchEvent(new Event("storage"));
     } catch (error) {
-      console.error("Error updating quantity:", error);
-      message.error("Failed to update quantity");
+      console.error("Lỗi khi cập nhật số lượng:", error);
+      message.error("Không thể cập nhật số lượng");
     }
   };
 
@@ -69,12 +67,11 @@ const CartPage: React.FC = () => {
           selected: cart.find((c) => c.id === item.id)?.selected ?? true,
         }))
       );
-      message.success("Item removed from cart");
-      // Trigger storage event to update cart count in header
+      message.success("Đã xóa sản phẩm khỏi giỏ hàng");
       window.dispatchEvent(new Event("storage"));
     } catch (error) {
-      console.error("Error removing item:", error);
-      message.error("Failed to remove item from cart");
+      console.error("Lỗi khi xóa sản phẩm:", error);
+      message.error("Không thể xóa sản phẩm khỏi giỏ hàng");
     }
   };
 
@@ -98,8 +95,9 @@ const CartPage: React.FC = () => {
 
   const columns = [
     {
-      title: "Select",
+      title: "Chọn",
       key: "select",
+      width: "80px",
       render: (_: any, record: CartItem) => (
         <Checkbox
           checked={record.selected}
@@ -108,9 +106,10 @@ const CartPage: React.FC = () => {
       ),
     },
     {
-      title: "Product",
+      title: "Sản phẩm",
       dataIndex: "name",
       key: "name",
+      width: "300px",
       render: (_: any, record: CartItem) => (
         <div className="flex items-center gap-4">
           <img
@@ -123,37 +122,47 @@ const CartPage: React.FC = () => {
       ),
     },
     {
-      title: "Price",
+      title: "Giá",
       dataIndex: "price",
       key: "price",
-      render: (price: number) => `$${price.toFixed(2)}`,
+      width: "120px",
+      render: (price: number) => `${price.toLocaleString()} VND`,
     },
     {
-      title: "Quantity",
+      title: "Số lượng",
       dataIndex: "quantity",
+      width: "150px",
       key: "quantity",
       render: (_: any, record: CartItem) => (
         <input
           type="number"
           min="1"
+          max="99"
           value={record.quantity}
-          onChange={(e) => updateQuantity(record.id, Number(e.target.value))}
+          onChange={(e) => {
+            const value = Number(e.target.value);
+            if (value >= 1 && value <= 99) {
+              updateQuantity(record.id, value);
+            }
+          }}
           className="w-16 border rounded-md text-center"
         />
       ),
     },
     {
-      title: "Total",
+      title: "Tổng cộng",
       key: "total",
+      width: "150px",
       render: (_: any, record: CartItem) =>
-        `$${(record.price * record.quantity).toFixed(2)}`,
+        `${(record.price * record.quantity).toLocaleString()} VND`,
     },
     {
-      title: "Action",
+      title: "Hành động",
       key: "action",
+      width: "100px",
       render: (_: any, record: CartItem) => (
         <Button danger onClick={() => removeItem(record.id)}>
-          Remove
+          Xóa
         </Button>
       ),
     },
@@ -178,7 +187,7 @@ const CartPage: React.FC = () => {
       <AppHeader />
       <Content className="flex-grow p-6 bg-gray-100 h-full">
         <div className="max-w-4xl mx-auto bg-white p-6 shadow-md rounded-lg min-h-[463px]">
-          <h2 className="text-2xl font-bold mb-4">Shopping Cart</h2>
+          <h2 className="text-2xl font-bold mb-4">Giỏ hàng</h2>
 
           {cart.length > 0 ? (
             <>
@@ -187,7 +196,7 @@ const CartPage: React.FC = () => {
                   onChange={(e) => selectAllItems(e.target.checked)}
                   checked={cart.every((item) => item.selected)}
                 >
-                  Select All Items
+                  Chọn tất cả
                 </Checkbox>
               </div>
               <Table
@@ -199,7 +208,8 @@ const CartPage: React.FC = () => {
 
               <div className="flex justify-between items-center mt-6">
                 <h3 className="text-xl font-semibold">
-                  Total ({selectedItems.length} items): ${totalPrice.toFixed(2)}
+                  Tổng cộng ({selectedItems.length} sản phẩm):{" "}
+                  {totalPrice.toLocaleString()} VND
                 </h3>
                 <Button
                   type="primary"
@@ -207,20 +217,18 @@ const CartPage: React.FC = () => {
                   className="bg-blue-500 hover:bg-blue-600"
                   onClick={() => {
                     if (selectedItems.length === 0) {
-                      message.warning(
-                        "Please select at least one item to checkout"
-                      );
+                      message.warning("Vui lòng chọn ít nhất một sản phẩm");
                       return;
                     }
                     navigate("/payment", { state: { selectedItems } });
                   }}
                 >
-                  Checkout
+                  Thanh toán
                 </Button>
               </div>
             </>
           ) : (
-            <p className="text-center text-gray-500">Your cart is empty.</p>
+            <p className="text-center text-gray-500">Giỏ hàng của bạn trống.</p>
           )}
         </div>
         <FeaturedBrands />

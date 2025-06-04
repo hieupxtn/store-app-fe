@@ -148,12 +148,11 @@ const ProductDetailPage: React.FC = () => {
         image: product.image,
       };
       await cartService.addToCart(cartItem);
-      message.success(`${product.productName} added to cart!`);
-      // Dispatch storage event to update cart count in AppHeader
+      message.success(`${product.productName} đã được thêm vào giỏ hàng!`);
       window.dispatchEvent(new Event("storage"));
     } catch (error) {
-      console.error("Error adding to cart:", error);
-      message.error("Failed to add item to cart");
+      console.error("Lỗi thêm vào giỏ hàng:", error);
+      message.error("Không thể thêm sản phẩm vào giỏ hàng");
     }
   };
 
@@ -161,7 +160,7 @@ const ProductDetailPage: React.FC = () => {
     if (!product) return;
     if (isInWishlist) {
       wishlistService.removeFromWishlist(product.id);
-      message.success("Removed from wishlist!");
+      message.success("Đã xóa khỏi danh sách yêu thích!");
     } else {
       const wishlistItem = {
         id: product.id,
@@ -171,10 +170,9 @@ const ProductDetailPage: React.FC = () => {
         rating: product.rating,
       };
       wishlistService.addToWishlist(wishlistItem);
-      message.success("Added to wishlist!");
+      message.success("Đã thêm vào danh sách yêu thích!");
     }
     setIsInWishlist(!isInWishlist);
-    // Dispatch storage event to update wishlist count in AppHeader
     window.dispatchEvent(new Event("storage"));
   };
 
@@ -220,7 +218,7 @@ const ProductDetailPage: React.FC = () => {
               <h1 className="text-2xl font-bold mb-4">{product.productName}</h1>
               <div className="mb-4">
                 <span className="text-3xl font-bold text-red-600">
-                  ${product.price.toLocaleString()}
+                  {product.price.toLocaleString()} VND
                 </span>
               </div>
               <div className="mb-4">
@@ -234,20 +232,20 @@ const ProductDetailPage: React.FC = () => {
               </div>
               <div className="mb-4">
                 <p className="text-gray-600">
-                  <span className="font-semibold">Brand:</span>{" "}
+                  <span className="font-semibold">Thương hiệu:</span>{" "}
                   {product?.Brand?.name}
                 </p>
                 <p className="text-gray-600">
-                  <span className="font-semibold">Category:</span>{" "}
+                  <span className="font-semibold">Danh mục:</span>{" "}
                   {product.ProductType.name}
                 </p>
                 <p className="text-gray-600">
-                  <span className="font-semibold">Availability:</span>{" "}
-                  {product.quantity > 0 ? "In Stock" : "Out of Stock"}
+                  <span className="font-semibold">Tình trạng:</span>{" "}
+                  {product.quantity > 0 ? "Còn hàng" : "Hết hàng"}
                 </p>
               </div>
               <div className="mb-4 mt-10">
-                <span className="font-semibold mr-2">Quantity:</span>
+                <span className="font-semibold mr-2">Số lượng:</span>
                 <input
                   type="number"
                   min={1}
@@ -275,7 +273,7 @@ const ProductDetailPage: React.FC = () => {
                   disabled={product.quantity <= 0}
                   onClick={handleAddToCart}
                 >
-                  Add to Cart
+                  Thêm vào giỏ hàng
                 </Button>
                 <Button
                   icon={
@@ -288,7 +286,9 @@ const ProductDetailPage: React.FC = () => {
                   size="large"
                   onClick={handleWishlistToggle}
                 >
-                  {isInWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
+                  {isInWishlist
+                    ? "Xóa khỏi danh sách yêu thích"
+                    : "Thêm vào danh sách yêu thích"}
                 </Button>
               </div>
             </Card>
@@ -297,7 +297,7 @@ const ProductDetailPage: React.FC = () => {
 
         {/* Specifications Section */}
         <div className="mt-8">
-          <h2 className="text-xl font-bold mb-4">Specifications</h2>
+          <h2 className="text-xl font-bold mb-4">Thông số sản phẩm</h2>
           <Card>
             <Row gutter={[16, 16]}>
               {Object.entries(JSON.parse(product.specifications)).map(
@@ -316,7 +316,7 @@ const ProductDetailPage: React.FC = () => {
 
         {/* Reviews Section */}
         <div className="mt-8">
-          <h2 className="text-xl font-bold mb-4">Customer Reviews</h2>
+          <h2 className="text-xl font-bold mb-4">Bình luận khách hàng</h2>
           <List
             itemLayout="horizontal"
             dataSource={reviews}
@@ -345,7 +345,7 @@ const ProductDetailPage: React.FC = () => {
 
         {/* Related Products Section */}
         <div className="mt-8">
-          <h2 className="text-xl font-bold mb-4">Related Products</h2>
+          <h2 className="text-xl font-bold mb-4">Sản phẩm liên quan</h2>
           <Row gutter={[16, 16]}>
             {relatedProducts.map((relatedProduct) => (
               <Col xs={12} sm={8} md={6} key={relatedProduct.id}>
@@ -366,7 +366,7 @@ const ProductDetailPage: React.FC = () => {
                     description={
                       <div>
                         <div className="text-red-600 font-bold">
-                          ${relatedProduct.price.toLocaleString()}
+                          {relatedProduct.price.toLocaleString()} VND
                         </div>
                         <div className="flex items-center gap-2">
                           <Rate disabled defaultValue={relatedProduct.rating} />

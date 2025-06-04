@@ -63,43 +63,34 @@ const ProfilePage: React.FC = () => {
 
     setLoading(true);
     try {
-      console.log("=== START UPDATE PROFILE ===");
-      console.log("Update values:", values);
-
       const response = await api.updateUser(user.id, {
         firstName: values.firstName,
         lastName: values.lastName,
+        email: values.email,
+        role: user.keyRole,
+        gender: null,
+        address: "",
       });
-
-      console.log("=== UPDATE PROFILE RESPONSE ===");
-      console.log("Full response:", response);
-
       if (response && response.user) {
-        message.success("Profile updated successfully!");
-        // Update local storage with new user data
+        message.success("Hồ sơ đã được cập nhật thành công!");
         const updatedUser = { ...user, ...response.user };
         localStorage.setItem("user", JSON.stringify(updatedUser));
         setUser(updatedUser);
       } else {
-        message.error("Failed to update profile");
+        message.error("Không thể cập nhật hồ sơ");
       }
     } catch (error: unknown) {
-      console.error("=== UPDATE PROFILE ERROR ===");
-      console.error("Full error:", error);
       const updateError = error as UpdateError;
       if (updateError.response) {
-        console.error("Response data:", updateError.response.data);
         message.error(
           updateError.response.data?.message ||
             updateError.response.data?.errMessage ||
-            "Failed to update profile. Please try again."
+            "Không thể cập nhật hồ sơ. Vui lòng thử lại."
         );
       } else if (updateError.request) {
-        console.error("No response received:", updateError.request);
-        message.error("Cannot connect to server. Please try again later.");
+        message.error("Không thể kết nối đến máy chủ. Vui lòng thử lại sau.");
       } else {
-        console.error("Error setting up request:", updateError.message);
-        message.error("An error occurred. Please try again.");
+        message.error("Đã xảy ra lỗi. Vui lòng thử lại.");
       }
     } finally {
       setLoading(false);
@@ -129,7 +120,7 @@ const ProfilePage: React.FC = () => {
               </Card>
             </Col>
             <Col xs={24} md={16}>
-              <Card title="Edit Profile">
+              <Card title="Chỉnh sửa hồ sơ">
                 <Form<ProfileFormValues>
                   layout="vertical"
                   initialValues={{
@@ -140,12 +131,12 @@ const ProfilePage: React.FC = () => {
                   onFinish={onFinish}
                 >
                   <Form.Item
-                    label="First Name"
+                    label="Họ"
                     name="firstName"
                     rules={[
                       {
                         required: true,
-                        message: "Please input your first name!",
+                        message: "Vui lòng nhập họ!",
                       },
                     ]}
                   >
@@ -153,12 +144,12 @@ const ProfilePage: React.FC = () => {
                   </Form.Item>
 
                   <Form.Item
-                    label="Last Name"
+                    label="Tên"
                     name="lastName"
                     rules={[
                       {
                         required: true,
-                        message: "Please input your last name!",
+                        message: "Vui lòng nhập tên!",
                       },
                     ]}
                   >
@@ -169,8 +160,11 @@ const ProfilePage: React.FC = () => {
                     label="Email"
                     name="email"
                     rules={[
-                      { required: true, message: "Please input your email!" },
-                      { type: "email", message: "Please enter a valid email!" },
+                      { required: true, message: "Vui lòng nhập email!" },
+                      {
+                        type: "email",
+                        message: "Vui lòng nhập email hợp lệ!",
+                      },
                     ]}
                   >
                     <Input disabled />
@@ -183,7 +177,7 @@ const ProfilePage: React.FC = () => {
                       loading={loading}
                       className="w-full"
                     >
-                      Update Profile
+                      Cập nhật hồ sơ
                     </Button>
                   </Form.Item>
                 </Form>

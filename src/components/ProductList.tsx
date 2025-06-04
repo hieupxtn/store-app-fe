@@ -43,10 +43,8 @@ const ProductList: React.FC<ProductListProps> = ({
       setWishlistItems(wishlist.map((item) => item.id));
     };
 
-    // Initial update
     updateWishlist();
 
-    // Listen for storage changes
     const handleStorageChange = () => {
       updateWishlist();
     };
@@ -96,18 +94,16 @@ const ProductList: React.FC<ProductListProps> = ({
         quantity: 1,
       };
       const updatedCart = await cartService.addToCart(cartItem);
-      message.success("Added to cart!");
-      // Update cart items state
+      message.success("Đã thêm vào giỏ hàng!");
       const items: { [key: number]: number } = {};
       updatedCart.forEach((item) => {
         items[item.id] = item.quantity;
       });
       setCartItems(items);
-      // Trigger storage event to update other components
       window.dispatchEvent(new Event("storage"));
     } catch (error) {
-      console.error("Error adding to cart:", error);
-      message.error("Failed to add item to cart");
+      console.error("Lỗi thêm vào giỏ hàng:", error);
+      message.error("Không thể thêm sản phẩm vào giỏ hàng");
     } finally {
       setIsAddingToCart((prev) => ({ ...prev, [product.id]: false }));
     }
@@ -117,7 +113,7 @@ const ProductList: React.FC<ProductListProps> = ({
     e.stopPropagation();
     if (wishlistService.isInWishlist(product.id)) {
       wishlistService.removeFromWishlist(product.id);
-      message.success("Removed from wishlist!");
+      message.success("Đã xóa khỏi danh sách yêu thích!");
     } else {
       const wishlistItem = {
         id: product.id,
@@ -127,7 +123,7 @@ const ProductList: React.FC<ProductListProps> = ({
         rating: product.rating,
       };
       wishlistService.addToWishlist(wishlistItem);
-      message.success("Added to wishlist!");
+      message.success("Đã thêm vào danh sách yêu thích!");
     }
     const updatedWishlist = wishlistService.getWishlist();
     setWishlistItems(updatedWishlist.map((item) => item.id));
@@ -201,15 +197,17 @@ const ProductList: React.FC<ProductListProps> = ({
                       className="text-yellow-500"
                     />
                   )}
-                  <div className="flex justify-between items-center mt-auto">
+                  <div className="flex justify-between items-center mt-auto pt-2">
                     <Text strong className="text-xl text-blue-600">
-                      ${product.price}
+                      {product.price.toLocaleString()} VND
                     </Text>
+                  </div>
+                  <div className="flex justify-between items-center mt-auto">
                     <button
                       className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
                       onClick={(e) => handleAddToCart(e, product)}
                     >
-                      Add to Cart
+                      Thêm vào giỏ hàng
                     </button>
                   </div>
                 </div>

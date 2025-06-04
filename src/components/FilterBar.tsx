@@ -27,7 +27,6 @@ const FilterBar: React.FC<FilterBarProps> = ({
         ))}
       </Select>
 
-      {/* Lọc theo giá */}
       <div className="w-full sm:w-64">
         <Slider
           range

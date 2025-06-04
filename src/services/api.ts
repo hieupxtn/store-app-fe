@@ -12,7 +12,6 @@ interface LoginResponse {
     role: string;
     createdAt: string;
     updatedAt: string;
-    // ... các field khác nếu cần
   };
   token: string;
 }
@@ -355,9 +354,7 @@ export interface UpdateOrderStatusResponse {
   order: Order;
 }
 
-// Example API endpoints
 export const api = {
-  // Auth endpoints
   login: async (data: { email: string; password: string }) => {
     const response = await axiosInstance.post<LoginResponse>('/api/login', data);
     return response.data;
@@ -393,7 +390,6 @@ export const api = {
     }
   },
   
-  // Product endpoints
   getProducts: (params?: URLSearchParams) => 
     axiosInstance.get(`/api/products${params ? `?${params.toString()}` : ''}`)
       .then(response => response.data)
@@ -410,7 +406,6 @@ export const api = {
         throw error;
       }),
   
-  // Cart endpoints
   getCart: () =>
     axiosInstance.get('/api/cart')
       .then(response => response.data)
@@ -443,7 +438,6 @@ export const api = {
         throw error;
       }),
 
-  // Popular products endpoint
   getPopularProducts: () =>
     axiosInstance.get('/api/get-popular-products')
       .then(response => response.data)
@@ -452,7 +446,6 @@ export const api = {
         throw error;
       }),
 
-  // New products endpoint
   getNewProducts: () =>
     axiosInstance.get('/api/new-products')
       .then(response => response.data)
@@ -461,7 +454,6 @@ export const api = {
         throw error;
       }),
 
-  // Featured products endpoint
   getFeaturedProducts: () =>
     axiosInstance.get('/api/featured-products')
       .then(response => response.data.products)
@@ -550,7 +542,6 @@ export const api = {
     }
   },
 
-  // Best sellers endpoint
   getBestSellers: () =>
     axiosInstance.get('/api/best-sellers')
       .then(response => response.data)
@@ -619,9 +610,9 @@ export const api = {
     }
   },
 
-  getOrderById: async (id: number): Promise<OrderResponse> => {
+  getOrderById: async (orderId: number): Promise<OrderResponse> => {
     try {
-      const response = await axiosInstance.get(`/api/orders/${id}`);
+      const response = await axiosInstance.get(`/api/orders/${orderId}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching order:', error);
@@ -629,7 +620,16 @@ export const api = {
     }
   },
 
-  // Product Type APIs
+  getUserOrders: async (userId: number): Promise<OrdersResponse> => {
+    try {
+      const response = await axiosInstance.get(`/api/users/${userId}/orders`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching user orders:', error);
+      throw error;
+    }
+  },
+
   getAllProductTypes: async (): Promise<ProductTypeResponse> => {
     try {
       const response = await axiosInstance.get('/api/product-types');
@@ -669,7 +669,6 @@ export const api = {
     }
   },
 
-  // Brands endpoint
   getBrands: async (): Promise<BrandsResponse> => {
     try {
       const response = await axiosInstance.get('/api/brands');

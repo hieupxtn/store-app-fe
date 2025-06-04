@@ -12,7 +12,6 @@ import {
   Button,
 } from "antd";
 import { DownOutlined, UpOutlined } from "@ant-design/icons";
-import ProductList from "../components/ProductList";
 import "../styles/LaptopPage.css";
 import AppHeader from "../common/AppHeader";
 import AppFooter from "../common/AppFooter";
@@ -39,13 +38,11 @@ const LaptopPage: React.FC = () => {
     ram: undefined,
   });
 
-  // Get search parameters from URL
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const query = searchParams.get("q") || "";
     setSearchQuery(query);
 
-    // You can add more parameter parsing here
     const brands = searchParams.get("brands")?.split(",") || [];
     const screenSize = searchParams.get("screenSize") || undefined;
     const ram = searchParams.get("ram") || undefined;
@@ -57,19 +54,6 @@ const LaptopPage: React.FC = () => {
     });
   }, [location.search]);
 
-  // Mock data - replace with actual API call
-  const laptops = [
-    {
-      id: 1,
-      name: "ASUS ROG Zephyrus G14",
-      price: 1499.99,
-      image: "https://via.placeholder.com/300x200",
-      description: "AMD Ryzen 9, 16GB RAM, 1TB SSD, RTX 3060",
-      rating: 4.5,
-    },
-    // Add more laptop data here
-  ];
-
   const handleFilterChange = (
     type: keyof FilterState,
     value: string | string[]
@@ -77,7 +61,6 @@ const LaptopPage: React.FC = () => {
     const newFilters = { ...activeFilters, [type]: value };
     setActiveFilters(newFilters);
 
-    // Update URL with new filters
     const searchParams = new URLSearchParams();
     if (searchQuery) searchParams.set("q", searchQuery);
     if (newFilters.brands.length)
@@ -98,7 +81,7 @@ const LaptopPage: React.FC = () => {
           <Col span={6}>
             <div className="filters-section bg-white p-4 rounded-lg shadow-sm">
               <div className="flex justify-between items-center mb-4">
-                <Title level={4}>Filters</Title>
+                <Title level={4}>Bộ lọc</Title>
                 <Button
                   type="text"
                   icon={showFilters ? <UpOutlined /> : <DownOutlined />}
@@ -110,11 +93,11 @@ const LaptopPage: React.FC = () => {
                 <div className="space-y-6">
                   {/* Price Range */}
                   <div>
-                    <Text strong>Price Range</Text>
+                    <Text strong>Khoảng giá</Text>
                     <Slider
                       range
                       min={0}
-                      max={5000}
+                      max={100000000}
                       value={priceRange}
                       onChange={setPriceRange}
                       className="mt-2"
@@ -123,19 +106,19 @@ const LaptopPage: React.FC = () => {
                       <Input
                         value={priceRange[0]}
                         style={{ width: 100 }}
-                        prefix="$"
+                        prefix="VND"
                       />
                       <Input
                         value={priceRange[1]}
                         style={{ width: 100 }}
-                        prefix="$"
+                        prefix="VND"
                       />
                     </div>
                   </div>
 
                   {/* Brands */}
                   <div>
-                    <Text strong>Brands</Text>
+                    <Text strong>Thương hiệu</Text>
                     <div className="mt-2">
                       <Checkbox.Group
                         className="flex flex-col space-y-2"
@@ -212,9 +195,6 @@ const LaptopPage: React.FC = () => {
                   </Select>
                 </div>
               </div>
-
-              {/* Product List */}
-              <ProductList products={laptops} />
             </div>
           </Col>
         </Row>

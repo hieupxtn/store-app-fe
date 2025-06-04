@@ -10,7 +10,7 @@ interface CustomSearchProps {
 }
 
 const CustomSearch: React.FC<CustomSearchProps> = ({
-  placeholder = "Search...",
+  placeholder = "Tìm kiếm...",
   onSearch,
 }) => {
   return (

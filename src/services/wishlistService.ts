@@ -20,7 +20,7 @@ export const wishlistService = {
     const existingItemIndex = wishlist.findIndex(wishlistItem => wishlistItem.id === item.id);
     
     if (existingItemIndex >= 0) {
-      return wishlist; // Item already exists
+      return wishlist;
     }
     
     wishlist.push(item);

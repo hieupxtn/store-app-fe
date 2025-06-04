@@ -40,7 +40,7 @@ const WishlistPage: React.FC = () => {
   const handleRemoveFromWishlist = (id: number) => {
     const updatedWishlist = wishlistService.removeFromWishlist(id);
     setWishlist(updatedWishlist);
-    message.success("Removed from wishlist!");
+    message.success("Đã xóa khỏi danh sách yêu thích!");
   };
 
   const handleAddToCart = async (item: WishlistItem) => {
@@ -56,12 +56,11 @@ const WishlistPage: React.FC = () => {
         image: item.image,
       };
       await cartService.addToCart(cartItem);
-      message.success(`${item.name} added to cart!`);
-      // Trigger storage event to update cart count in AppHeader
+      message.success(`${item.name} đã được thêm vào giỏ hàng!`);
       window.dispatchEvent(new Event("storage"));
     } catch (error) {
-      console.error("Error adding to cart:", error);
-      message.error("Failed to add item to cart");
+      console.error("Lỗi thêm vào giỏ hàng:", error);
+      message.error("Không thể thêm sản phẩm vào giỏ hàng");
     } finally {
       setIsAddingToCart((prev) => ({ ...prev, [item.id]: false }));
     }
@@ -73,7 +72,7 @@ const WishlistPage: React.FC = () => {
       <Content className="flex-grow p-6 bg-gray-100 h-full">
         <div className="max-w-6xl mx-auto bg-white p-6 shadow-md rounded-lg min-h-[703px]">
           <Title level={2} className="mb-6">
-            My Wishlist
+            Danh sách yêu thích
           </Title>
 
           {wishlist.length > 0 ? (
@@ -99,7 +98,7 @@ const WishlistPage: React.FC = () => {
                         {item.name}
                       </Title>
                       <Text strong className="text-xl text-blue-600 mb-4">
-                        ${item.price.toFixed(2)}
+                        {item.price.toLocaleString()} VND
                       </Text>
                       {item.rating && (
                         <div className="mb-4">
@@ -110,14 +109,14 @@ const WishlistPage: React.FC = () => {
                           />
                         </div>
                       )}
-                      <div className="flex justify-between mt-auto pt-4">
+                      <div className="flex justify-between mt-auto pt-4 gap-2">
                         <Button
                           type="primary"
                           icon={<ShoppingCartOutlined />}
                           onClick={() => handleAddToCart(item)}
-                          className="w-[100px]"
+                          className="w-[150px]"
                         >
-                          Add to Cart
+                          Thêm vào giỏ
                         </Button>
                         <Button
                           danger
@@ -125,7 +124,7 @@ const WishlistPage: React.FC = () => {
                           onClick={() => handleRemoveFromWishlist(item.id)}
                           className="w-[100px]"
                         >
-                          Remove
+                          Xóa
                         </Button>
                       </div>
                     </div>
@@ -137,10 +136,10 @@ const WishlistPage: React.FC = () => {
             <div className="text-center py-12">
               <HeartOutlined className="text-6xl text-red-500 mb-4" />
               <Title level={3} className="text-gray-500">
-                Your wishlist is empty
+                Danh sách yêu thích của bạn đang trống
               </Title>
               <Text type="secondary">
-                Add some products to your wishlist to see them here
+                Thêm sản phẩm vào danh sách yêu thích để xem chúng ở đây
               </Text>
             </div>
           )}
