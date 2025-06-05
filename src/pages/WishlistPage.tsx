@@ -70,7 +70,7 @@ const WishlistPage: React.FC = () => {
     <Layout className="min-h-screen flex flex-col">
       <AppHeader />
       <Content className="flex-grow p-6 bg-gray-100 h-full">
-        <div className="max-w-6xl mx-auto bg-white p-6 shadow-md rounded-lg min-h-[703px]">
+        <div className="max-w-6xl mx-auto bg-white p-6 shadow-md rounded-lg min-h-[675px]">
           <Title level={2} className="mb-6">
             Danh sách yêu thích
           </Title>

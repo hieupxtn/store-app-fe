@@ -209,7 +209,7 @@ const PaymentPage: React.FC = () => {
     <Layout className="min-h-screen flex flex-col">
       <AppHeader />
       <Content className="flex-grow p-6 bg-gray-100">
-        <div className="max-w-4xl mx-auto min-h-[703px]">
+        <div className="max-w-4xl mx-auto min-h-[675px]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card title="Thông tin thanh toán" className="h-fit">
               <Form
@@ -408,25 +408,27 @@ const PaymentPage: React.FC = () => {
                   </Form.Item>
                 </div>
 
-                <Form.Item
-                  name="couponCode"
-                  label="Mã giảm giá (Tùy chọn)"
-                  rules={[
-                    {
-                      pattern: /^[A-Z0-9]+$/,
-                      message: "Mã giảm giá phải chứa chữ cái và số!",
-                    },
-                  ]}
-                >
-                  <Input
-                    placeholder="Nhập mã giảm giá nếu có"
-                    maxLength={10}
-                    onChange={(e) => {
-                      const upperValue = e.target.value.toUpperCase();
-                      form.setFieldValue("couponCode", upperValue);
-                    }}
-                  />
-                </Form.Item>
+                {userInfo && (
+                  <Form.Item
+                    name="couponCode"
+                    label="Mã giảm giá (Tùy chọn)"
+                    rules={[
+                      {
+                        pattern: /^[A-Z0-9]+$/,
+                        message: "Mã giảm giá phải chứa chữ cái và số!",
+                      },
+                    ]}
+                  >
+                    <Input
+                      placeholder="Nhập mã giảm giá nếu có"
+                      maxLength={10}
+                      onChange={(e) => {
+                        const upperValue = e.target.value.toUpperCase();
+                        form.setFieldValue("couponCode", upperValue);
+                      }}
+                    />
+                  </Form.Item>
+                )}
 
                 <Button
                   type="primary"

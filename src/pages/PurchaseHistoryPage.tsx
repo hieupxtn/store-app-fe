@@ -224,6 +224,10 @@ const PurchaseHistoryPage: React.FC = () => {
             <div className="flex justify-center items-center h-64">
               <Spin size="large" tip="Đang tải lịch sử mua hàng..." />
             </div>
+          ) : orders.length === 0 ? (
+            <div className="flex justify-center items-center h-64 text-gray-500 text-lg">
+              Chưa có lịch sử mua hàng
+            </div>
           ) : (
             <Table
               columns={columns}

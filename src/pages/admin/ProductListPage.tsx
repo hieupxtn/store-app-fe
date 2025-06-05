@@ -14,14 +14,12 @@ import {
   InputNumber,
   Select,
   Upload,
+  Row,
+  Col,
 } from "antd";
+import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import {
-  api,
-  Product,
-  UpdateProductRequest,
-  CreateProductRequest,
-} from "../../services/api";
+import { api, Product, ProductType, Brand } from "../../services/api";
 import AppHeader from "../../common/AppHeader";
 import AppFooter from "../../common/AppFooter";
 import { UploadOutlined } from "@ant-design/icons";
@@ -30,50 +28,69 @@ import type { UploadChangeParam } from "antd/es/upload";
 const { Content } = Layout;
 const { TextArea } = Input;
 
+interface ExtendedProduct extends Omit<Product, "ProductType" | "Brand"> {
+  specifications: string;
+  ProductType: ProductType;
+  Brand: Brand | null;
+}
+
+interface SpecificationItem {
+  key: string;
+  value: string;
+}
+
+interface FormValues {
+  productName: string;
+  productTypeId: number;
+  brandId: number | undefined;
+  price: number;
+  quantity: number;
+  description: string;
+  specifications: SpecificationItem[];
+  image: string;
+}
+
 const ProductListPage: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ExtendedProduct[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] =
+    useState<ExtendedProduct | null>(null);
   const [isViewModalVisible, setIsViewModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [productToDelete, setProductToDelete] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [productTypes, setProductTypes] = useState<ProductType[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
   const [form] = Form.useForm();
   const [createForm] = Form.useForm();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.getAllProducts();
-        setProducts(response.products);
+        const [productsResponse, typesResponse, brandsResponse] =
+          await Promise.all([
+            api.getAllProducts(),
+            api.getAllProductTypes(),
+            api.getBrands(),
+          ]);
+        setProducts(productsResponse.products as ExtendedProduct[]);
+        setProductTypes(typesResponse.types);
+        setBrands(brandsResponse);
       } catch (error) {
-        console.error("Error fetching products:", error);
-        message.error("Failed to fetch products. Please try again later.");
+        console.error("Error fetching data:", error);
+        message.error("Không thể tải dữ liệu. Vui lòng thử lại sau.");
         setProducts([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProducts();
+    fetchData();
   }, []);
-
-  const getProductTypeName = (type: number) => {
-    switch (type) {
-      case 1:
-        return "Điện thoại";
-      case 2:
-        return "Laptop";
-      case 3:
-        return "Phụ kiện";
-      case 4:
-        return "Máy tính bảng";
-      default:
-        return "Không xác định";
-    }
-  };
 
   const columns = [
     {
@@ -81,11 +98,13 @@ const ProductListPage: React.FC = () => {
       dataIndex: "id",
       key: "id",
       width: 80,
+      fixed: "left" as const,
     },
     {
       title: "Hình ảnh",
       dataIndex: "image",
       key: "image",
+      width: 100,
       render: (image: string) => (
         <Image
           src={image}
@@ -100,25 +119,42 @@ const ProductListPage: React.FC = () => {
       title: "Tên",
       dataIndex: "productName",
       key: "productName",
+      width: 200,
+      ellipsis: true,
     },
     {
       title: "Loại",
-      dataIndex: "productType",
+      dataIndex: ["ProductType", "name"],
       key: "productType",
-      render: (type: number) => (
-        <Tag color="blue">{getProductTypeName(type)}</Tag>
+      width: 120,
+      render: (_: unknown, record: ExtendedProduct) => (
+        <Tag color="blue">{record.ProductType.name}</Tag>
       ),
+    },
+    {
+      title: "Thương hiệu",
+      dataIndex: ["Brand", "name"],
+      key: "brand",
+      width: 120,
+      render: (_: unknown, record: ExtendedProduct) =>
+        record.Brand ? (
+          <Tag color="green">{record.Brand.name}</Tag>
+        ) : (
+          <Tag color="default">Không có thương hiệu</Tag>
+        ),
     },
     {
       title: "Giá",
       dataIndex: "price",
       key: "price",
+      width: 150,
       render: (price: number) => `${price ? price.toLocaleString() : 0} VND`,
     },
     {
       title: "Số lượng",
       dataIndex: "quantity",
       key: "quantity",
+      width: 100,
       render: (quantity: number) => (
         <span className={quantity <= 0 ? "text-red-500" : ""}>{quantity}</span>
       ),
@@ -127,6 +163,7 @@ const ProductListPage: React.FC = () => {
       title: "Đánh giá",
       dataIndex: "rating",
       key: "rating",
+      width: 100,
       render: (rating: number) => (
         <span className="text-yellow-500">{rating} ★</span>
       ),
@@ -135,29 +172,34 @@ const ProductListPage: React.FC = () => {
       title: "Mô tả",
       dataIndex: "description",
       key: "description",
+      width: 200,
       ellipsis: true,
-    },
-    {
-      title: "Ngày tạo",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      render: (date: string | null) =>
-        date ? new Date(date).toLocaleString() : "Chưa cập nhật",
     },
     {
       title: "Hành động",
       key: "actions",
-      render: (_: unknown, record: Product) => (
-        <Space>
-          <Button type="link" onClick={() => handleViewProduct(record.id)}>
+      width: 200,
+      fixed: "right" as const,
+      render: (_: unknown, record: ExtendedProduct) => (
+        <Space size="small">
+          <Button
+            type="primary"
+            size="small"
+            onClick={() => handleViewProduct(record.id)}
+          >
             Xem
           </Button>
-          <Button type="link" onClick={() => handleEditProduct(record.id)}>
+          <Button
+            type="default"
+            size="small"
+            onClick={() => handleEditProduct(record.id)}
+          >
             Sửa
           </Button>
           <Button
-            type="link"
+            type="primary"
             danger
+            size="small"
             onClick={() => handleDeleteProduct(record.id)}
           >
             Xóa
@@ -175,11 +217,11 @@ const ProductListPage: React.FC = () => {
         setSelectedProduct(product);
         setIsViewModalVisible(true);
       } else {
-        message.error("Product not found");
+        message.error("Không tìm thấy sản phẩm");
       }
     } catch (error) {
       console.error("Error fetching product:", error);
-      message.error("Failed to fetch product details");
+      message.error("Không thể tải thông tin sản phẩm");
     } finally {
       setLoading(false);
     }
@@ -191,22 +233,31 @@ const ProductListPage: React.FC = () => {
       const product = products.find((p) => p.id === productId);
       if (product) {
         setSelectedProduct(product);
+        // Convert specifications JSON string to array
+        const specifications = Object.entries(
+          JSON.parse(product.specifications)
+        ).map(([key, value]) => ({
+          key,
+          value: value as string,
+        }));
+
         form.setFieldsValue({
           productName: product.productName,
-          productType: product.productType,
+          productTypeId: product.ProductType.id,
+          brandId: product.Brand?.id,
           price: product.price,
           quantity: product.quantity,
-          quantityLimit: product.quantityLimit,
           description: product.description,
+          specifications,
           image: product.image,
         });
         setIsEditModalVisible(true);
       } else {
-        message.error("Product not found");
+        message.error("Không tìm thấy sản phẩm");
       }
     } catch (error) {
       console.error("Error fetching product:", error);
-      message.error("Failed to fetch product details");
+      message.error("Không thể tải thông tin sản phẩm");
     } finally {
       setLoading(false);
     }
@@ -223,12 +274,12 @@ const ProductListPage: React.FC = () => {
     try {
       setLoading(true);
       await api.deleteProduct(productToDelete);
-      message.success("Product deleted successfully");
+      message.success("Xóa sản phẩm thành công");
       const response = await api.getAllProducts();
-      setProducts(response.products);
+      setProducts(response.products as ExtendedProduct[]);
     } catch (error) {
       console.error("Error deleting product:", error);
-      message.error("Failed to delete product. Please try again later.");
+      message.error("Không thể xóa sản phẩm. Vui lòng thử lại sau.");
     } finally {
       setLoading(false);
       setIsDeleteModalVisible(false);
@@ -236,36 +287,60 @@ const ProductListPage: React.FC = () => {
     }
   };
 
-  const handleUpdateProduct = async (values: UpdateProductRequest) => {
+  const handleUpdateProduct = async (values: FormValues) => {
     if (!selectedProduct) return;
 
     try {
       setLoading(true);
-      await api.updateProduct(selectedProduct.id, values);
-      message.success("Product updated successfully");
+      // Convert specifications array to JSON string
+      const specifications = values.specifications.reduce(
+        (acc: Record<string, string>, curr) => {
+          acc[curr.key] = curr.value;
+          return acc;
+        },
+        {}
+      );
+
+      await api.updateProduct(selectedProduct.id, {
+        ...values,
+        specifications: JSON.stringify(specifications),
+      });
+      message.success("Cập nhật sản phẩm thành công");
       setIsEditModalVisible(false);
       const productsResponse = await api.getAllProducts();
-      setProducts(productsResponse.products);
+      setProducts(productsResponse.products as ExtendedProduct[]);
     } catch (error) {
       console.error("Error updating product:", error);
-      message.error("Failed to update product. Please try again later.");
+      message.error("Không thể cập nhật sản phẩm. Vui lòng thử lại sau.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCreateProduct = async (values: CreateProductRequest) => {
+  const handleCreateProduct = async (values: FormValues) => {
     try {
       setLoading(true);
-      await api.createProduct(values);
-      message.success("Product created successfully");
+      // Convert specifications array to JSON string
+      const specifications = values.specifications.reduce(
+        (acc: Record<string, string>, curr) => {
+          acc[curr.key] = curr.value;
+          return acc;
+        },
+        {}
+      );
+
+      await api.createProduct({
+        ...values,
+        specifications: JSON.stringify(specifications),
+      });
+      message.success("Thêm sản phẩm thành công");
       setIsCreateModalVisible(false);
       createForm.resetFields();
       const productsResponse = await api.getAllProducts();
-      setProducts(productsResponse.products);
+      setProducts(productsResponse.products as ExtendedProduct[]);
     } catch (error) {
       console.error("Error creating product:", error);
-      message.error("Failed to create product. Please try again later.");
+      message.error("Không thể thêm sản phẩm. Vui lòng thử lại sau.");
     } finally {
       setLoading(false);
     }
@@ -310,6 +385,104 @@ const ProductListPage: React.FC = () => {
     </Form.Item>
   );
 
+  const SpecificationsFormItem = () => (
+    <Form.List
+      name="specifications"
+      rules={[
+        {
+          validator: async (_, specifications) => {
+            if (!specifications || specifications.length < 1) {
+              return Promise.reject(
+                new Error("Vui lòng thêm ít nhất một thông số kỹ thuật!")
+              );
+            }
+          },
+        },
+      ]}
+    >
+      {(fields, { add, remove }, { errors }) => (
+        <>
+          {fields.map(({ key, name, ...restField }) => (
+            <Row
+              key={key}
+              gutter={8}
+              align="middle"
+              className="mb-2"
+              style={{ height: 40 }}
+            >
+              <Col
+                span={10}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  height: "100%",
+                }}
+              >
+                <Form.Item
+                  {...restField}
+                  name={[name, "key"]}
+                  rules={[
+                    { required: true, message: "Vui lòng nhập tên thông số!" },
+                  ]}
+                  style={{ width: "100%", marginBottom: 0, height: "100%" }}
+                >
+                  <Input
+                    placeholder="Tên thông số"
+                    style={{ height: "32px" }}
+                  />
+                </Form.Item>
+              </Col>
+              <Col
+                span={10}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  height: "100%",
+                }}
+              >
+                <Form.Item
+                  {...restField}
+                  name={[name, "value"]}
+                  rules={[
+                    { required: true, message: "Vui lòng nhập giá trị!" },
+                  ]}
+                  style={{ width: "100%", marginBottom: 0, height: "100%" }}
+                >
+                  <Input placeholder="Giá trị" style={{ height: "32px" }} />
+                </Form.Item>
+              </Col>
+              <Col
+                span={4}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  height: "100%",
+                }}
+              >
+                <MinusCircleOutlined
+                  onClick={() => remove(name)}
+                  style={{ fontSize: 20, color: "#ff4d4f", cursor: "pointer" }}
+                />
+              </Col>
+            </Row>
+          ))}
+          <Form.Item>
+            <Button
+              type="dashed"
+              onClick={() => add()}
+              block
+              icon={<PlusOutlined />}
+            >
+              Thêm thông số
+            </Button>
+            <Form.ErrorList errors={errors} />
+          </Form.Item>
+        </>
+      )}
+    </Form.List>
+  );
+
   return (
     <Layout className="flex flex-col min-h-screen w-full">
       <AppHeader />
@@ -338,12 +511,17 @@ const ProductListPage: React.FC = () => {
               loading={loading}
               scroll={{ x: 1500 }}
               pagination={{
-                current: 1,
-                pageSize: 10,
+                current: currentPage,
+                pageSize: pageSize,
                 total: products.length,
-                showSizeChanger: true,
-                showQuickJumper: true,
-                showTotal: (total) => `Total ${total} items`,
+                onChange: (page, size) => {
+                  setCurrentPage(page);
+                  setPageSize(size);
+                },
+                onShowSizeChange: (current, size) => {
+                  setCurrentPage(current);
+                  setPageSize(size);
+                },
               }}
             />
           </Card>
@@ -376,7 +554,15 @@ const ProductListPage: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="font-bold">Loại:</h3>
-                  <p>{getProductTypeName(selectedProduct.productType)}</p>
+                  <p>{selectedProduct.ProductType.name}</p>
+                </div>
+                <div>
+                  <h3 className="font-bold">Thương hiệu:</h3>
+                  <p>
+                    {selectedProduct.Brand
+                      ? selectedProduct.Brand.name
+                      : "Không có thương hiệu"}
+                  </p>
                 </div>
                 <div>
                   <h3 className="font-bold">Giá:</h3>
@@ -387,16 +573,22 @@ const ProductListPage: React.FC = () => {
                   <p>{selectedProduct.quantity}</p>
                 </div>
                 <div>
-                  <h3 className="font-bold">Giới hạn số lượng:</h3>
-                  <p>{selectedProduct.quantityLimit}</p>
-                </div>
-                <div>
                   <h3 className="font-bold">Đánh giá:</h3>
                   <p>{selectedProduct.rating} ★</p>
                 </div>
                 <div>
                   <h3 className="font-bold">Mô tả:</h3>
                   <p>{selectedProduct.description}</p>
+                </div>
+                <div>
+                  <h3 className="font-bold">Thông số kỹ thuật:</h3>
+                  <pre className="whitespace-pre-wrap bg-gray-100 p-4 rounded">
+                    {JSON.stringify(
+                      JSON.parse(selectedProduct.specifications),
+                      null,
+                      2
+                    )}
+                  </pre>
                 </div>
               </div>
             )}
@@ -421,17 +613,31 @@ const ProductListPage: React.FC = () => {
               </Form.Item>
 
               <Form.Item
-                name="productType"
+                name="productTypeId"
                 label="Loại sản phẩm"
                 rules={[
                   { required: true, message: "Vui lòng chọn loại sản phẩm!" },
                 ]}
               >
                 <Select>
-                  <Select.Option value={1}>Điện thoại</Select.Option>
-                  <Select.Option value={2}>Laptop</Select.Option>
-                  <Select.Option value={3}>Phụ kiện</Select.Option>
-                  <Select.Option value={4}>Máy tính bảng</Select.Option>
+                  {productTypes.map((type) => (
+                    <Select.Option key={type.id} value={type.id}>
+                      {type.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+
+              <Form.Item name="brandId" label="Thương hiệu">
+                <Select allowClear>
+                  <Select.Option value={null}>
+                    Không có thương hiệu
+                  </Select.Option>
+                  {brands.map((brand) => (
+                    <Select.Option key={brand.id} value={brand.id}>
+                      {brand.name}
+                    </Select.Option>
+                  ))}
                 </Select>
               </Form.Item>
 
@@ -440,13 +646,7 @@ const ProductListPage: React.FC = () => {
                 label="Giá"
                 rules={[{ required: true, message: "Vui lòng nhập giá!" }]}
               >
-                <InputNumber
-                  style={{ width: "100%" }}
-                  formatter={(value) =>
-                    `${value} VND`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                  }
-                  parser={(value) => value!.replace(/\$\s?|(,*)/g, "")}
-                />
+                <InputNumber style={{ width: "100%" }} min={0} step={1000} />
               </Form.Item>
 
               <Form.Item
@@ -458,25 +658,23 @@ const ProductListPage: React.FC = () => {
               </Form.Item>
 
               <Form.Item
-                name="quantityLimit"
-                label="Giới hạn số lượng"
-                rules={[
-                  {
-                    required: true,
-                    message: "Vui lòng nhập giới hạn số lượng!",
-                  },
-                ]}
-              >
-                <InputNumber style={{ width: "100%" }} min={0} />
-              </Form.Item>
-
-              <Form.Item
                 name="description"
                 label="Mô tả"
                 rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
               >
                 <TextArea rows={4} />
               </Form.Item>
+
+              <Form.Item
+                label="Thông số kỹ thuật"
+                required
+                tooltip="Thêm các thông số kỹ thuật của sản phẩm"
+              >
+                <SpecificationsFormItem />
+              </Form.Item>
+
+              <ImageUploadFormItem />
+
               <Form.Item>
                 <Button type="primary" htmlType="submit" loading={loading}>
                   Cập nhật sản phẩm
@@ -508,17 +706,31 @@ const ProductListPage: React.FC = () => {
               </Form.Item>
 
               <Form.Item
-                name="productType"
+                name="productTypeId"
                 label="Loại sản phẩm"
                 rules={[
                   { required: true, message: "Vui lòng chọn loại sản phẩm!" },
                 ]}
               >
                 <Select>
-                  <Select.Option value={1}>Điện thoại</Select.Option>
-                  <Select.Option value={2}>Laptop</Select.Option>
-                  <Select.Option value={3}>Phụ kiện</Select.Option>
-                  <Select.Option value={4}>Máy tính bảng</Select.Option>
+                  {productTypes.map((type) => (
+                    <Select.Option key={type.id} value={type.id}>
+                      {type.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+
+              <Form.Item name="brandId" label="Thương hiệu">
+                <Select allowClear>
+                  <Select.Option value={null}>
+                    Không có thương hiệu
+                  </Select.Option>
+                  {brands.map((brand) => (
+                    <Select.Option key={brand.id} value={brand.id}>
+                      {brand.name}
+                    </Select.Option>
+                  ))}
                 </Select>
               </Form.Item>
 
@@ -527,13 +739,7 @@ const ProductListPage: React.FC = () => {
                 label="Giá"
                 rules={[{ required: true, message: "Vui lòng nhập giá!" }]}
               >
-                <InputNumber
-                  style={{ width: "100%" }}
-                  formatter={(value) =>
-                    `${value} VND`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                  }
-                  parser={(value) => value!.replace(/\$\s?|(,*)/g, "")}
-                />
+                <InputNumber style={{ width: "100%" }} min={0} step={1000} />
               </Form.Item>
 
               <Form.Item
@@ -545,24 +751,19 @@ const ProductListPage: React.FC = () => {
               </Form.Item>
 
               <Form.Item
-                name="quantityLimit"
-                label="Giới hạn số lượng"
-                rules={[
-                  {
-                    required: true,
-                    message: "Vui lòng nhập giới hạn số lượng!",
-                  },
-                ]}
-              >
-                <InputNumber style={{ width: "100%" }} min={0} />
-              </Form.Item>
-
-              <Form.Item
                 name="description"
                 label="Mô tả"
                 rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
               >
                 <TextArea rows={4} />
+              </Form.Item>
+
+              <Form.Item
+                label="Thông số kỹ thuật"
+                required
+                tooltip="Thêm các thông số kỹ thuật của sản phẩm"
+              >
+                <SpecificationsFormItem />
               </Form.Item>
 
               <ImageUploadFormItem />
@@ -584,9 +785,9 @@ const ProductListPage: React.FC = () => {
               setIsDeleteModalVisible(false);
               setProductToDelete(null);
             }}
-            okText="Delete"
+            okText="Xóa"
             okType="danger"
-            cancelText="Cancel"
+            cancelText="Hủy"
             confirmLoading={loading}
           >
             <p>

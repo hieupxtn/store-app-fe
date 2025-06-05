@@ -119,16 +119,25 @@ const UserListPage: React.FC = () => {
       title: "Thao tác",
       key: "actions",
       render: (_: unknown, record: User) => (
-        <Space>
-          <Button type="link" onClick={() => handleViewUser(record.id)}>
+        <Space size="small">
+          <Button
+            type="primary"
+            size="small"
+            onClick={() => handleViewUser(record.id)}
+          >
             Xem
           </Button>
-          <Button type="link" onClick={() => handleEditUser(record.id)}>
+          <Button
+            type="default"
+            size="small"
+            onClick={() => handleEditUser(record.id)}
+          >
             Sửa
           </Button>
           <Button
-            type="link"
+            type="primary"
             danger
+            size="small"
             onClick={() => handleDeleteUser(record.id)}
           >
             Xóa

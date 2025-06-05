@@ -25,7 +25,7 @@ interface FilterState {
   categories: string[];
   brands: string[];
   priceRange: [number, number];
-  rating: number | undefined;
+  maxRating: number | undefined;
 }
 
 interface Product {
@@ -69,7 +69,7 @@ const ProductsPage: React.FC = () => {
     categories: [],
     brands: [],
     priceRange: [0, 50000000],
-    rating: undefined,
+    maxRating: undefined,
   });
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -125,8 +125,8 @@ const ProductsPage: React.FC = () => {
         });
       }
 
-      if (activeFilters.rating) {
-        params.append("minRating", activeFilters.rating.toString());
+      if (activeFilters.maxRating) {
+        params.append("maxRating", activeFilters.maxRating.toString());
       }
 
       params.append("sort", sortBy);
@@ -159,8 +159,8 @@ const ProductsPage: React.FC = () => {
       Number(searchParams.get("minPrice")) || 0,
       Number(searchParams.get("maxPrice")) || 50000000,
     ] as [number, number];
-    const rating = searchParams.get("minRating")
-      ? Number(searchParams.get("minRating"))
+    const rating = searchParams.get("maxRating")
+      ? Number(searchParams.get("maxRating"))
       : undefined;
     const sort = searchParams.get("sort") || "featured";
     setSortBy(sort);
@@ -169,7 +169,7 @@ const ProductsPage: React.FC = () => {
       categories,
       brands,
       priceRange,
-      rating,
+      maxRating: rating,
     });
   }, [location.search]);
 
@@ -191,8 +191,8 @@ const ProductsPage: React.FC = () => {
       searchParams.set("minPrice", newFilters.priceRange[0].toString());
     if (newFilters.priceRange[1] < 50000000)
       searchParams.set("maxPrice", newFilters.priceRange[1].toString());
-    if (newFilters.rating)
-      searchParams.set("minRating", newFilters.rating.toString());
+    if (newFilters.maxRating)
+      searchParams.set("maxRating", newFilters.maxRating.toString());
 
     navigate(`/products?${searchParams.toString()}`);
   };
@@ -201,7 +201,7 @@ const ProductsPage: React.FC = () => {
     <Layout className="products-page">
       <AppHeader />
       <Content className="px-4 py-6">
-        <Row gutter={[24, 24]} className="px-14 min-h-[703px]">
+        <Row gutter={[24, 24]} className="px-14 min-h-[675px]">
           {/* Filters Section */}
           <Col span={6}>
             <div className="filters-section bg-white p-4 rounded-lg shadow-sm">
@@ -346,15 +346,15 @@ const ProductsPage: React.FC = () => {
                           min={0}
                           max={5}
                           step={0.5}
-                          value={activeFilters.rating || 0}
+                          value={activeFilters.maxRating || 5}
                           onChange={(value) => {
-                            handleFilterChange("rating", value);
+                            handleFilterChange("maxRating", value);
                           }}
                           className="flex-1"
                         />
                         <span className="text-sm font-medium min-w-[40px] text-right">
-                          {activeFilters.rating
-                            ? `${activeFilters.rating}★`
+                          {activeFilters.maxRating
+                            ? `${activeFilters.maxRating}★`
                             : ""}
                         </span>
                       </div>

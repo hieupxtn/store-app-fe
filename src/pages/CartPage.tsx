@@ -186,7 +186,7 @@ const CartPage: React.FC = () => {
     <Layout className="min-h-screen flex flex-col">
       <AppHeader />
       <Content className="flex-grow p-6 bg-gray-100 h-full">
-        <div className="max-w-4xl mx-auto bg-white p-6 shadow-md rounded-lg min-h-[463px]">
+        <div className="max-w-4xl mx-auto bg-white p-6 shadow-md rounded-lg min-h-[435px]">
           <h2 className="text-2xl font-bold mb-4">Giỏ hàng</h2>
 
           {cart.length > 0 ? (

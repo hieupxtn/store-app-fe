@@ -231,11 +231,11 @@ const ManageCategories: React.FC = () => {
           <div className="flex items-center justify-between mb-6">
             <Title level={2}>Quản lý danh mục</Title>
             <Space>
-              <Button type="default" onClick={() => navigate("/admin")}>
-                Quay lại trang quản trị
-              </Button>
               <Button type="primary" onClick={() => showModal()}>
                 Thêm danh mục
+              </Button>
+              <Button type="default" onClick={() => navigate("/admin")}>
+                Quay lại trang quản trị
               </Button>
             </Space>
           </div>

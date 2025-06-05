@@ -92,12 +92,13 @@ export interface AdminProductDetailResponse {
 
 export interface UpdateProductRequest {
   productName: string;
-  productType: number;
   price: number;
   quantity: number;
-  quantityLimit: number;
   description: string;
   image: string;
+  specifications: string;
+  productTypeId: number;
+  brandId?: number;
 }
 
 export interface UpdateProductResponse {
@@ -113,12 +114,13 @@ export interface DeleteProductResponse {
 
 export interface CreateProductRequest {
   productName: string;
-  productType: number;
   price: number;
   quantity: number;
-  quantityLimit: number;
   description: string;
   image: string;
+  specifications: string;
+  productTypeId: number;
+  brandId?: number;
 }
 
 export interface CreateProductResponse {
@@ -189,17 +191,28 @@ export interface DeleteUserResponse {
 
 export interface Product {
   id: number;
-  productCode: string;
   productName: string;
-  productType: number;
   price: number;
-  quantity: number;
-  quantityLimit: number;
-  rating: number;
-  description: string;
   image: string;
-  createdAt: string;
-  updatedAt: string;
+  description: string;
+  specifications: string;
+  rating: number;
+  quantity: number;
+  ProductType: {
+    id: number;
+    name: string;
+    description: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  Brand: {
+    id: number;
+    name: string;
+    description: string;
+    logo: string;
+    createdAt: string;
+    updatedAt: string;
+  } | null;
 }
 
 export interface ProductsResponse {

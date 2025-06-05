@@ -316,30 +316,36 @@ const ProductDetailPage: React.FC = () => {
 
         <div className="mt-8">
           <h2 className="text-xl font-bold mb-4">Bình luận khách hàng</h2>
-          <List
-            itemLayout="horizontal"
-            dataSource={reviews}
-            renderItem={(review) => (
-              <List.Item>
-                <List.Item.Meta
-                  avatar={<Avatar icon={<UserOutlined />} />}
-                  title={
-                    <div className="flex items-center">
-                      <Rate disabled defaultValue={review.rating} />
-                      <span className="ml-2 text-gray-500">
-                        {new Date(review.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                  }
-                  description={
-                    <Typography.Paragraph>
-                      {review.comment}
-                    </Typography.Paragraph>
-                  }
-                />
-              </List.Item>
-            )}
-          />
+          {reviews.length > 0 ? (
+            <List
+              itemLayout="horizontal"
+              dataSource={reviews}
+              renderItem={(review) => (
+                <List.Item>
+                  <List.Item.Meta
+                    avatar={<Avatar icon={<UserOutlined />} />}
+                    title={
+                      <div className="flex items-center">
+                        <Rate disabled defaultValue={review.rating} />
+                        <span className="ml-2 text-gray-500">
+                          {new Date(review.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    }
+                    description={
+                      <Typography.Paragraph>
+                        {review.comment}
+                      </Typography.Paragraph>
+                    }
+                  />
+                </List.Item>
+              )}
+            />
+          ) : (
+            <div className="text-gray-500 text-center py-4">
+              Chưa có đánh giá cho sản phẩm
+            </div>
+          )}
         </div>
 
         {/* Related Products Section */}
